@@ -1,38 +1,41 @@
 import React from 'react';
 
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams, Link } from "react-router-dom";
 
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 
+import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-
 type Role = {
     id: number,
-    name: RoleEnum
-}
+    name: "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
+};
 
 type IUser = {
     id: number,
     email: string,
     firstName: string,
     lastName: string,
-    roles : Role[],
-}
+    password: string,
+    roles : Role[]
+};
 
 // types for the component props
-type Props = {};
+interface Params {
+    userID: string
+};
+
+type Props = WithRouterProps<Params>;
 
 type State = {
-  redirect: string | null,
-  userReady: boolean,
-  currentUser: IUser | null
-}
+    userReady: boolean,
+    currentUser: IUser | null
+};
 
 
-class Profile extends React.Component<Props, State> {
+class ViewUser extends React.Component<Props, State> {
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
@@ -40,7 +43,6 @@ class Profile extends React.Component<Props, State> {
         // declare state variables
         super(props);
         this.state = {
-            redirect: null,
             userReady: false,
             currentUser: null
         };
@@ -50,60 +52,63 @@ class Profile extends React.Component<Props, State> {
     //      component is already placed in the DOM (Document Object Model).
     componentDidMount() {
 
-        const currentUser = AuthService.getCurrentUser();
+        const { match, navigate } = this.props;  // params injected from HOC wrapper component
+        const userID = parseInt(match.params.userID);
 
-        if (currentUser === null) {
-            this.setState({ redirect: "/home" });  // store a path to redirect to
-        } else {
-            this.setState({ currentUser: currentUser, userReady: true })
-        }
+        UserService.getUser(userID).then((response) => {
+
+            this.setState({ currentUser: response.data.user, userReady: true })
+            //console.log(response.data.user);
+
+        }).catch((error) => {
+            navigate("/home"); // redirect to home page
+        });
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { redirect, userReady, currentUser } = this.state;
-
-        if (redirect) {
-            return <Navigate to={redirect} />  // redirect page
-
-        }
+        const { userReady, currentUser } = this.state;
+        const { match } = this.props;  // props injected from HOC wrapper component
 
         return (
             <div className="container">
-                {(userReady) ?
+                {(userReady && currentUser != null) ?
                     <div>
                         <header className="jumbotron">
                             <h3>
-                                <strong>{(currentUser != null) ? currentUser.email : null} </strong> Profile
+                                <strong>{currentUser.email} </strong> Profile
                             </h3>
 
                         </header>
                         <p>
                             <strong>Id:</strong>{" "}
-                            {(currentUser != null) ? currentUser.id : null}
+                            {currentUser.id}
 
                         </p>
                         <p>
                             <strong>Email:</strong>{" "}
-                            {(currentUser != null) ? currentUser.email : null}
+                            {currentUser.email}
                         </p>
                         <p>
                             <strong>First Name:</strong>{" "}
-                            {(currentUser != null) ? currentUser.firstName : null}
+                            {currentUser.firstName}
                         </p>
                         <p>
                             <strong>Last Name:</strong>{" "}
-                            {(currentUser != null) ? currentUser.lastName : null}
+                            {currentUser.lastName}
                         </p>
                         <strong>Authorities:</strong>
                         <ul>
-                            {currentUser != null && currentUser.roles.map((role: Role, index: number) =>
+                            {currentUser.roles.map((role: Role, index: number) =>
                                 <li key={index}>
-                                    {/*role*/}
+                                    {role.name}
                                 </li>
                             )}
                         </ul>
+
+                        <Link to={`/edituser/${currentUser.id}`} className="btn btn-sm btn-info admin-action">Edit</Link>
+
                     </div>
                 : null}
             </div>
@@ -112,4 +117,4 @@ class Profile extends React.Component<Props, State> {
 
 }
 
-export default ViewUser
+export default withRouter(ViewUser)

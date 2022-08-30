@@ -1,13 +1,22 @@
 import React from 'react';
 
-import UserServiceService from "../services/UserService";
+import { Navigate, useParams, Link } from "react-router-dom";
+
+import ErrorBoundary from './error-page.component';
+
+import UserService from "../services/UserService";
+
+import { withRouter, WithRouterProps } from './withRouter';
+
 
 // types for the component props
-type Props = {};
+interface Params {};
+
+type Props = WithRouterProps<Params>;
 
 type State = {
-    content: string;
-}
+    content: string
+};
 
 
 class BoardModerator extends React.Component<Props, State> {
@@ -47,13 +56,33 @@ class BoardModerator extends React.Component<Props, State> {
     render() {
         return (
             <div className="container">
-                <header className="jumbotron">
-                    <h3>{this.state.content}</h3>
-                </header>
+                <ErrorBoundary>
+                    <header className="jumbotron">
+                        <h3>{this.state.content}</h3>
+                    </header>
+
+                    <hr/>
+
+                    <div className="d-flex justify-content-between">
+                        <div>
+                            <h4> Invoices </h4>
+                        </div>
+                        <div>
+                            <span className="mx-4"> Filter by status </span>
+
+                            <Link to={`/newinvoice`} className="btn btn-sm btn-info admin-action rounded-pill px-4 py-2">
+                                <i className="bi bi-plus-circle-fill align-middle mr-2"></i>
+                                <span className="align-middle"> New Invoice </span>
+                            </Link>
+
+                        </div>
+                    </div>
+
+                </ErrorBoundary>
             </div>
         );
     }
 
 }
 
-export default BoardModerator
+export default withRouter(BoardModerator)

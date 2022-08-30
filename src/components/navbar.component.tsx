@@ -2,40 +2,34 @@ import React from 'react';
 
 import { Routes, Route, Link } from "react-router-dom";
 
+import Login from "./login.component";
+import Register from "./register.component";
+import Home from "./home.component";
+import Profile from "./profile.component";
+import NotFound from "./page-not-found.component";
 
-import logo from './logo.svg';
+import BoardUser from "./board-user.component";
+import BoardModerator from "./board-moderator.component";
+import BoardAdmin from "./board-admin.component";
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
-
-import AuthService from "./services/AuthService";
-
-import Login from "./components/login.component";
-import Register from "./components/register.component";
-import Home from "./components/home.component";
-import Profile from "./components/profile.component";
-import NotFound from "./components/page-not-found.component";
-
-import BoardUser from "./components/board-user.component";
-import BoardModerator from "./components/board-moderator.component";
-import BoardAdmin from "./components/board-admin.component";
+import AuthService from "../services/AuthService";
 
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
+type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN";
 
 type Role = {
     id: number,
     name: RoleEnum
-}
+};
 
 type IUser = {
     id: number,
     email: string,
     firstName: string,
     lastName: string,
-    roles : Role[],
-}
+    roles : Role[]
+};
 
 // types for the component props
 type Props = {};
@@ -44,22 +38,25 @@ type State = {
     showModeratorBoard: boolean,
     showAdminBoard: boolean,
     currentUser: IUser | undefined
-}
+};
 
 
-class App extends React.Component<Props, State> {
+class Navbar extends React.Component<Props, State> {
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
 
         // declare state variables
         super(props);
-        this.logOut = this.logOut.bind(this);
         this.state = {
             showModeratorBoard: false,
             showAdminBoard: false,
             currentUser: undefined,
         };
+
+        // bind methods so that they are accessible from the state inside of the render() method.
+        this.logOut = this.logOut.bind(this);
+
     }
 
     // componentDidMount() - lifecycle method to execute code when the
@@ -76,13 +73,6 @@ class App extends React.Component<Props, State> {
             });
         }
 
-            //EventBus.on("logout", this.logOut);
-    }
-
-    // componentDidMount() - lifecycle method to execute code when the
-    // component gets destroyed or unmounted from the DOM (Document Object Model).
-    componentWillUnmount() {
-        //EventBus.remove("logout", this.logOut);
     }
 
     logOut() {
@@ -94,7 +84,6 @@ class App extends React.Component<Props, State> {
         });
     }
 
-
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
@@ -102,49 +91,13 @@ class App extends React.Component<Props, State> {
 
         return (
 
-            <div className="App">
+            <div>
 
-                {/* NAVIGATION BAR */}
-
-                <nav className="navbar navbar-expand navbar-dark bg-dark">
+                <nav className="navbar navbar-expand navbar-dark bg-dark  px-4 relative">
 
                     <Link to={"/"} className="navbar-brand">
                         SpringReact
                     </Link>
-
-                    <div className="navbar-nav mr-auto">
-
-                        <li className="nav-item">
-                            <Link to={"/home"} className="nav-link">
-                                Home
-                            </Link>
-                        </li>
-
-                        {showModeratorBoard && (
-                            <li className="nav-item">
-                                <Link to={"/mod"} className="nav-link">
-                                    Moderator Board
-                                </Link>
-                            </li>
-                        )}
-
-                        {showAdminBoard && (
-                            <li className="nav-item">
-                                <Link to={"/admin"} className="nav-link">
-                                    Admin Board
-                                </Link>
-                            </li>
-                        )}
-
-                        {currentUser && (
-                            <li className="nav-item">
-                                <Link to={"/user"} className="nav-link">
-                                    User Board
-                                </Link>
-                            </li>
-                        )}
-
-                    </div>
 
                     {currentUser ? (
 
@@ -178,31 +131,11 @@ class App extends React.Component<Props, State> {
                             </li>
                         </div>
                     )}
-
                 </nav>
-
-                {/* Defining all routes for app */}
-                <div className="container mt-3">
-
-                    <Routes>
-                        { /* You don't need to use an exact prop... all paths match exactly by default. */}
-                        <Route path="/" element={ <Home/> } />
-                        <Route path="/home" element={ <Home/> } />
-
-                        <Route path="/login" element={ <Login/> } />
-                        <Route path="/register" element={ <Register/> } />
-                        <Route path="/profile" element={ <Profile/> } />
-                        <Route path="/user" element={ <BoardUser/> } />
-                        <Route path="/mod" element={ <BoardModerator/> } />
-                        <Route path="/admin" element={ <BoardAdmin/> } />
-                        <Route path="*" element={ <NotFound/> } />     {/* fallback for unmatched route */}
-                    </Routes>
-                </div>
-
             </div>
         );
 
     }
 }
 
-export default App;
+export default Navbar;

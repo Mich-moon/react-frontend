@@ -1,33 +1,68 @@
 // TokenService provides get, set, remove methods to work with Token and User Data stored on Browser.
 
+// types and interfaces
+type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
+
+type IUser = {
+    message: string,
+    tokenType: "Bearer",
+    accessToken: string,
+    refreshToken: string,
+    id: number,
+    email: string,
+    firstName: string,
+    lastName: string,
+    roles : RoleEnum[],
+}
+
 class TokenService {
 
     // setters
-    setUser(user) {
-        console.log(JSON.stringify(user));
+    setUser(user: IUser) {
+        //console.log(JSON.stringify(user));
         localStorage.setItem("user", JSON.stringify(user));
     }
 
     // getters
-
     getLocalRefreshToken() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        return user?.refreshToken;
+        const userStr = localStorage.getItem("user");
+
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            return user.refreshToken;
+        }
+        return null;
     }
 
     getLocalAccessToken() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        return user?.accessToken;
+        const userStr = localStorage.getItem("user");
+
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            return user.accessToken;
+        }
+        return null;
     }
 
     updateLocalAccessToken(token: string) {
-        let user = JSON.parse(localStorage.getItem("user"));
-        user.accessToken = token;
-        localStorage.setItem("user", JSON.stringify(user));
+        const userStr = localStorage.getItem("user");
+
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            user.accessToken = token;
+            localStorage.setItem("user", JSON.stringify(user));
+        }
+        return null;
     }
 
     getUser() {
-        return JSON.parse(localStorage.getItem("user"));
+        const userStr = localStorage.getItem("user");
+
+        if (userStr) {
+            return JSON.parse(userStr);
+        }
+        return null;
+
     }
 
     removeUser() {

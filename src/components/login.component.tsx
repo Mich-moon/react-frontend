@@ -1,7 +1,7 @@
 import React from 'react';
 //import { Component } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -13,17 +13,22 @@ import AuthService from "../services/AuthService";
 type Props = {};
 
 type State = {
+
+    /** The user's email */
     email: string,
+
+    /** The user's password */
     password: string,
+
+    /** Whether to show loading circle animation */
     loading: boolean,
+
+    /** feedback message to be displayed */
     message: string
 };
 
 
 class Login extends React.Component<Props, State> {
-
-    navigate = useNavigate();  // for changing routes
-
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
@@ -56,16 +61,14 @@ class Login extends React.Component<Props, State> {
 
           const { email, password } = formValue; // get data from form
           this.setState({
-              message: "",
               loading: true
-          }); // update state variables
+          });
 
           // log in user with email and password
           AuthService.login(email, password).then(
               () => { // validation ok
 
-                  this.navigate("/profile"); // redirect to profile page
-                  window.location.reload();  // refresh
+                  window.location.href="/user";  // redirect page
               },
               error => { // validation not ok
                   const resMessage =
@@ -95,6 +98,7 @@ class Login extends React.Component<Props, State> {
 
           return(
               <div className="col-md-12">
+
                   <div className="card card-container">
                       <img
                           src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
@@ -127,19 +131,23 @@ class Login extends React.Component<Props, State> {
                               </div>
                               <div className="form-group">
                                   <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+
+                                      {/* loading circle animation */}
                                       {loading && (
                                           <span className="spinner-border spinner-border-sm"></span>
                                       )}
                                       <span>Login</span>
                                   </button>
                               </div>
-                                  {message && (
-                                      <div className="form-group">
-                                          <div className="alert alert-danger" role="alert">
-                                              {message}
-                                          </div>
+
+                              {/* feedback message display */}
+                              {message && (
+                                  <div className="form-group">
+                                      <div className="alert alert-danger" role="alert">
+                                          {message}
                                       </div>
-                                  )}
+                                  </div>
+                              )}
                           </Form>
                       </Formik>
                   </div>

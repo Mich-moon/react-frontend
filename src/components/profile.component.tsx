@@ -1,26 +1,21 @@
 import React from 'react';
 
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import AuthService from "../services/AuthService";
-import UserServiceService from "../services/UserService";
+import UserService from "../services/UserService";
 
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-
-type Role = {
-    id: number,
-    name: RoleEnum
-}
+type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN";
 
 type IUser = {
     id: number,
     email: string,
     firstName: string,
     lastName: string,
-    roles : Role[],
-}
+    roles : RoleEnum[]
+};
 
 // types for the component props
 type Props = {};
@@ -28,7 +23,7 @@ type Props = {};
 type State = {
   redirect: string | null,
   userReady: boolean,
-  currentUser: IUser || { accessToken: string }
+  currentUser: IUser | null
 };
 
 
@@ -42,7 +37,7 @@ class Profile extends React.Component<Props, State> {
         this.state = {
             redirect: null,
             userReady: false,
-            currentUser: { accessToken: "" }
+            currentUser: null
         };
     }
 
@@ -52,7 +47,7 @@ class Profile extends React.Component<Props, State> {
 
         const currentUser = AuthService.getCurrentUser();
 
-        if (!currentUser) {
+        if (currentUser === null) {
             this.setState({ redirect: "/home" });  // store a path to redirect to
         } else {
             this.setState({ currentUser: currentUser, userReady: true })
@@ -62,42 +57,47 @@ class Profile extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        if (this.state.redirect) {
-            return <Redirect to={this.state.redirect} />  // redirect page
+        const { redirect, userReady, currentUser } = this.state;
+
+        if (redirect) {
+            return <Navigate to={redirect} />  // redirect page
 
         }
 
-        const { currentUser } = this.state;
-
         return (
             <div className="container">
-                {(this.state.userReady) ?
+                {(userReady) ?
                     <div>
                         <header className="jumbotron">
                             <h3>
-                                <strong>{currentUser.username}</strong> Profile
+                                <strong>{(currentUser != null) ? currentUser.email : null} </strong> Profile
                             </h3>
+
                         </header>
                         <p>
                             <strong>Id:</strong>{" "}
-                            {currentUser.id}
+                            {(currentUser != null) ? currentUser.id : null}
+
                         </p>
                         <p>
                             <strong>Email:</strong>{" "}
-                            {currentUser.email}
+                            {(currentUser != null) ? currentUser.email : null}
                         </p>
                         <p>
                             <strong>First Name:</strong>{" "}
-                            {currentUser.first}
+                            {(currentUser != null) ? currentUser.firstName : null}
                         </p>
                         <p>
                             <strong>Last Name:</strong>{" "}
-                            {currentUser.lastName}
+                            {(currentUser != null) ? currentUser.lastName : null}
                         </p>
                         <strong>Authorities:</strong>
                         <ul>
-                            {currentUser.roles &&
-                            currentUser.roles.map((role, index) => <li key={index}>{role}</li>)}
+                            {currentUser != null && currentUser.roles.map((role: RoleEnum, index: number) =>
+                                <li key={index}>
+                                    {role}
+                                </li>
+                            )}
                         </ul>
                     </div>
                 : null}

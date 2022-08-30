@@ -1,15 +1,16 @@
 import React from 'react';
 
-import UserServiceService from "../services/UserService";
+import UserService from "../services/UserService";
+
 
 // types for the component props
 type Props = {};
 
 type State = {
-    content: string;
-}
+    content: string
+};
 
-class Home extends React.Component<Props, State> {
+class Home extends React.Component <Props, State>{
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
@@ -18,7 +19,7 @@ class Home extends React.Component<Props, State> {
         super(props);
         this.state = {
             content: ""
-        };
+        }
     }
 
     //  componentDidMount() - lifecycle method to execute code when the

@@ -7,18 +7,31 @@ import AuthService from "../services/AuthService";
 
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN" // possible user role values
+type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"; // possible user role values
 
 // types for the component props
 type Props = {};
 
 type State = {
+    /** The user's first name */
     firstname: string,
+
+    /** The user's last name */
     lastname: string,
+
+    /** The user's email */
     email: string,
+
+    /** The user's password */
     password: string,
+
+    /** The user's role(s) */
     role: RoleEnum[],
+
+    /** Whether registration was successful */
     successful: boolean,
+
+    /** feedback message to be displayed */
     message: string
 };
 
@@ -249,6 +262,8 @@ class Register extends React.Component<Props, State> {
                                     </div>
                                 </div>
                             )}
+
+                            {/* feedback message display */}
                             {message && (
                                 <div className="form-group">
                                     <div
@@ -260,7 +275,7 @@ class Register extends React.Component<Props, State> {
                                         {message}
                                     </div>
                                 </div>
-                             )}
+                            )}
                         </Form>
                     </Formik>
                 </div>

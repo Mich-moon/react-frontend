@@ -1,13 +1,17 @@
 import React from 'react';
 
-import UserServiceService from "../services/UserService";
+import User from './user.component';
+import ErrorBoundary from './error-page.component';
+
+import UserService from "../services/UserService";
+
 
 // types for the component props
 type Props = {};
 
 type State = {
-    content: string;
-}
+    content: string
+};
 
 
 class BoardAdmin extends React.Component<Props, State> {
@@ -47,9 +51,15 @@ class BoardAdmin extends React.Component<Props, State> {
     render() {
         return (
             <div className="container">
-                <header className="jumbotron">
-                    <h3>{this.state.content}</h3>
-                </header>
+                <ErrorBoundary>
+                    <header className="jumbotron">
+                        <h3>{this.state.content}</h3>
+                    </header>
+
+                    <hr/>
+
+                    <User/>
+                </ErrorBoundary>
             </div>
         );
     }

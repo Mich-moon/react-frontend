@@ -193,7 +193,8 @@ class User extends React.Component<Props, State> {
                                            type="button"
                                            id="delete-user-btn-admin"
                                            className="btn btn-sm btn-danger admin-action"
-                                           onClick={() => this.handleOpenDeleteModal(user.id)}>
+                                           onClick={() => this.handleOpenDeleteModal(user.id)}
+                                          >
                                               <span>Delete</span>
                                           </button>
 

@@ -71,8 +71,9 @@ class BoardModerator extends React.Component<Props, State> {
                             <span className="mx-4"> Filter by status </span>
 
                             <Link to={`/newinvoice`} className="btn btn-sm btn-info admin-action rounded-pill px-4 py-2">
-                                <i className="bi bi-plus-circle-fill align-middle mr-2"></i>
-                                <span className="align-middle"> New Invoice </span>
+                                <i className="bi bi-plus-circle-fill text-white align-self-center"></i>
+                                <span className="mx-1"></span>
+                                <span className="align-self-center"> New Invoice </span>
                             </Link>
 
                         </div>

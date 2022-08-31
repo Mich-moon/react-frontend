@@ -33,13 +33,22 @@ interface Params {};
 
 type Props = WithRouterProps<Params>;
 
+type InvoiceItem = {
+    id: number,
+    description: string | null,
+    price: number | null,
+    quantity: number | null,
+    amount: number | null
+};
+
 type State = {
     userReady: boolean,
     currentUser: IUser | null,
     loading: boolean,
     flash: boolean,
     flashMessage: string,
-    flashType: Color
+    flashType: Color,
+    invoiceItems: InvoiceItem[]
 };
 
 class CreateInvoice extends React.Component<Props, State> {
@@ -55,7 +64,14 @@ class CreateInvoice extends React.Component<Props, State> {
             loading: false,
             flash: false,
             flashMessage: "",
-            flashType: "info"
+            flashType: "info",
+            invoiceItems: [{
+                id: 1,
+                description: null,
+                price: null,
+                quantity: null,
+                amount: null
+            }]
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
@@ -75,7 +91,7 @@ class CreateInvoice extends React.Component<Props, State> {
         if (currentUser === null) {
             navigate("/home"); // redirect to home page
         } else {
-            this.setState({ currentUser: currentUser, userReady: true })
+            this.setState({ currentUser: currentUser, userReady: true });
         }
     }
 
@@ -88,13 +104,22 @@ class CreateInvoice extends React.Component<Props, State> {
     }
 
     addItem() {
-
+        let items = this.state.invoiceItems;
+        let nextID = items.length;
+        items.push({
+            id: nextID + 1,
+            description: null,
+            price: null,
+            quantity: null,
+            amount: null
+        });
+        this.setState({ invoiceItems: items });
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { userReady, currentUser, loading, flash, flashMessage, flashType } = this.state;
+        const { userReady, currentUser, loading, flash, flashMessage, flashType, invoiceItems } = this.state;
 
         const initialValues = {
         };
@@ -232,6 +257,8 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     </div>
                                                 </div>
 
+                                                {invoiceItems.map(item =>
+
                                                 <div className="col-12 d-flex">
                                                     <div className="input-group-sm col-5">
                                                         <Field name="value-desc" type="text" className="form-control text-start"/>
@@ -251,10 +278,12 @@ class CreateInvoice extends React.Component<Props, State> {
                                                       id="delete-item-btn"
                                                       className="btn p-0"
                                                     >
-                                                        <i className="bi bi-trash align-self-center"></i>
+                                                        <i className="bi bi-trash align-self-center fs-5"></i>
                                                     </button>
 
                                                 </div>
+
+                                                )}
 
                                             </div>
 
@@ -267,6 +296,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                       type="button"
                                                       id="invoice-add-item-btn"
                                                       className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-12"
+                                                      onClick={() => this.addItem()}
                                                     >
                                                         <i className="bi bi-plus-circle align-self-center"></i>
                                                         <span className="mx-1"></span>

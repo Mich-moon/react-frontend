@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Navigate, Link } from "react-router-dom";
 
-import Alert from '@material-ui/lab/Alert';  // for flash message
+import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
 import Fade from '@material-ui/core/Fade';   // for flash message fade
 
 import ReactModal from 'react-modal';  // for modal
@@ -56,6 +56,9 @@ interface State {
     /** Message to be flashed */
     flashMessage: string, // message to be flashed
 
+    /** type of flash message */
+    flashType: Color,
+
     /** Whether modal should be displayed */
     modal: boolean,
 
@@ -74,6 +77,7 @@ class User extends React.Component<Props, State> {
              users: null,
              flash: false,
              flashMessage: "",
+             flashType: "info",
              modal: false,
              deleteID: null
          };
@@ -103,17 +107,39 @@ class User extends React.Component<Props, State> {
 
             //console.log("delete"+this.state.deleteID);
 
-            UserService.deleteUser(this.state.deleteID).then((response) => {
-                // display flash message
-                this.setState({ flash: true, flashMessage: response.data.message });
+            UserService.deleteUser(this.state.deleteID).then(
 
-                // set timer on flash message
-                setTimeout(() => {
-                    this.setState({ flash: false, flashMessage: "" });
-                }, 5000);
+                (response) => { // success
 
-                //console.log(response.data.message);
-            });
+                    // display flash message
+                    this.setState({
+                        flash: true,
+                        flashMessage: response.data.message,
+                        flashType: "success"
+                    });
+                },
+                error => { // failure
+
+                    const resMessage =
+                        (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                        error.message ||
+                        error.toString();
+
+                    this.setState({
+                        flash: true,
+                        flashMessage: resMessage,
+                        flashType: "error"
+                    });
+                }
+            );
+
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: "" });
+            }, 5000);
+
         }
     }
 
@@ -126,14 +152,14 @@ class User extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
      render () {
 
-        const { users, flash, flashMessage, modal } = this.state;
+        const { users, flash, flashMessage, flashType, modal } = this.state;
 
          return (
              <div>
 
                  {/* flash message */}
                  <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
-                     <Alert className={styles.alert} severity="success"> {flashMessage} </Alert>
+                     <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
                  </Fade>
 
                  {/* Modal */}
@@ -180,30 +206,30 @@ class User extends React.Component<Props, State> {
                      </thead>
 
                      {(users != null) ?
-                        <tbody>
-                            {users.map(
+                         <tbody>
+                             {users.map(
                                  user =>
                                  <tr key = {user.id}>
-                                      <td> {user.id}</td>
-                                      <td> {user.firstName}</td>
-                                      <td> {user.lastName}</td>
-                                      <td> {user.email}</td>
-                                      <td>
-                                          <button
-                                           type="button"
-                                           id="delete-user-btn-admin"
-                                           className="btn btn-sm btn-danger admin-action"
-                                           onClick={() => this.handleOpenDeleteModal(user.id)}
-                                          >
+                                     <td> {user.id}</td>
+                                     <td> {user.firstName}</td>
+                                     <td> {user.lastName}</td>
+                                     <td> {user.email}</td>
+                                     <td>
+                                     <button
+                                       type="button"
+                                       id="delete-user-btn-admin"
+                                       className="btn btn-sm btn-danger admin-action"
+                                       onClick={() => this.handleOpenDeleteModal(user.id)}
+                                     >
                                               <span>Delete</span>
-                                          </button>
+                                     </button>
 
-                                          <Link to={`/userview/${user.id}`} className="btn btn-sm btn-info admin-action">View More</Link>
-                                      </td>
+                                     <Link to={`/userview/${user.id}`} className="btn btn-sm btn-info admin-action">View More</Link>
+                                     </td>
 
                                  </tr>
-                            )}
-                        </tbody>
+                             )}
+                         </tbody>
                      : null}
 
                  </table>

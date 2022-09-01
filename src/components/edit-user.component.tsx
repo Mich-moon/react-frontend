@@ -257,7 +257,7 @@ class EditUser extends React.Component<Props, State> {
 
                     // set timer on flash message
                     setTimeout(() => {
-                        this.setState({ flash: false, flashMessage: "", flashType: "error" });
+                        this.setState({ flash: false, flashMessage: "" });
                     }, 5000);
                 }
             );
@@ -303,7 +303,7 @@ class EditUser extends React.Component<Props, State> {
 
         // set timer on flash message
         setTimeout(() => {
-            this.setState({ flash: false, flashMessage: "", flashType: "info" });
+            this.setState({ flash: false, flashMessage: ""});
         }, 5000);
     }
 
@@ -355,7 +355,7 @@ class EditUser extends React.Component<Props, State> {
             password: "",
             newPassword: "",
             confirmPassword: "",
-        }
+        };
 
 
         return (

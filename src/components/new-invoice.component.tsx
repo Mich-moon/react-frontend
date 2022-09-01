@@ -34,11 +34,10 @@ interface Params {};
 type Props = WithRouterProps<Params>;
 
 type InvoiceItem = {
-    id: number,
-    description: string | null,
-    price: number | null,
-    quantity: number | null,
-    amount: number | null
+    description: string,
+    price: number,
+    quantity: number,
+    amount: number
 };
 
 type State = {
@@ -48,7 +47,10 @@ type State = {
     flash: boolean,
     flashMessage: string,
     flashType: Color,
-    invoiceItems: InvoiceItem[]
+    invoiceItems: InvoiceItem[],
+    subtotal: number,
+    tax: number,
+    totalDue: number
 };
 
 class CreateInvoice extends React.Component<Props, State> {
@@ -66,17 +68,20 @@ class CreateInvoice extends React.Component<Props, State> {
             flashMessage: "",
             flashType: "info",
             invoiceItems: [{
-                id: 1,
-                description: null,
-                price: null,
-                quantity: null,
-                amount: null
-            }]
+                description: "",
+                price: 0.00,
+                quantity: 0.00,
+                amount: 0.00
+            }],
+            subtotal: 0.00,
+            tax: 0.00,
+            totalDue: 0.00
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.handleSubmit = this.handleSubmit.bind(this);
         this.addItem = this.addItem.bind(this);
+        this.removeItem = this.removeItem.bind(this);
 
     }
 
@@ -97,35 +102,128 @@ class CreateInvoice extends React.Component<Props, State> {
 
     validationSchema() {
 
+        // create schema for validation
+        return Yup.object().shape({
+            companyFrom: Yup.string()
+                .required("This field is required!"),
+            streetAddressFrom: Yup.string()
+                .required("This field is required!"),
+            cityFrom: Yup.string()
+                 .required("This field is required!"),
+            zipFrom: Yup.string()
+                 .required("This field is required!"),
+            phoneFrom: Yup.string()
+                 .required("This field is required!"),
+            nameTo: Yup.string()
+                 .required("This field is required!"),
+            companyTo: Yup.string()
+                 .required("This field is required!"),
+            streetAddressTo: Yup.string()
+                 .required("This field is required!"),
+            cityTo: Yup.string()
+                 .required("This field is required!"),
+            stateTo: Yup.string()
+                 .required("This field is required!"),
+            zipTo: Yup.string()
+                 .required("This field is required!"),
+            phoneTo: Yup.string()
+                 .required("This field is required!"),
+            emailTo: Yup.string()
+                 .required("This field is required!"),
+
+        });
+
     }
 
-    handleSubmit() {
+    handleSubmit(formValue: { companyFrom: string; streetAddressFrom: string; cityFrom: string; zipFrom: string; phoneFrom: string;
+                               nameTo: string; companyTo: string; streetAddressTo: string; cityTo: string; stateTo: string;
+                               zipTo: string; phoneTo: string; emailTo: string; }) {
+
+        // handle data from form submission
+        const { companyFrom, streetAddressFrom, cityFrom, zipFrom, phoneFrom,
+                nameTo, companyTo, streetAddressTo, cityTo, stateTo, zipTo, phoneTo, emailTo } = formValue; // get data from form
+
+        console.log(companyFrom);
 
     }
 
     addItem() {
+        // add a new item to the invoice
+
         let items = this.state.invoiceItems;
-        let nextID = items.length;
         items.push({
-            id: nextID + 1,
-            description: null,
-            price: null,
-            quantity: null,
-            amount: null
+            description: "",
+            price: 0.00,
+            quantity: 0.00,
+            amount: 0.00
         });
         this.setState({ invoiceItems: items });
+    }
+
+    removeItem(index: number) {
+        // remove an item from the invoice
+
+        let items = this.state.invoiceItems;
+        console.log(items);
+
+        if (items.length !== 1) {
+            items.splice(index, 1);
+            this.setState({ invoiceItems: items });
+
+        } else {
+            // flash message for failure
+            this.setState({
+                flash: true,
+                flashMessage: "Invoice must have at least one item",
+                flashType: "warning"
+            });
+
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: "" });
+            }, 5000);
+        }
+    }
+
+    subtotal() {
+
+        let items = this.state.invoiceItems;
+
+        let total = items.reduce( function(accumulator=0, currentValue) {
+
+            if (currentValue != null) {
+                return accumulator + currentValue.price;
+            }
+        }, 0);
+
+        return total;
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { userReady, currentUser, loading, flash, flashMessage, flashType, invoiceItems } = this.state;
+        const { userReady, currentUser, loading, flash, flashMessage, flashType,
+                invoiceItems, subtotal, tax, totalDue } = this.state;
 
         const initialValues = {
+            companyFrom: "",
+            streetAddressFrom: "",
+            cityFrom: "",
+            stateFrom: "",
+            zipFrom: "",
+            phoneFrom: "000-0000",
+            nameTo: "",
+            companyTo: "",
+            streetAddressTo: "",
+            cityTo: "",
+            stateTo: "",
+            zipTo: "",
+            phoneTo: "000-0000",
+            emailTo: ""
         };
 
         return (
-            <div className="container">
+            <div className="container mb-4">
 
                 {/* flash message */}
                  <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
@@ -160,27 +258,27 @@ class CreateInvoice extends React.Component<Props, State> {
                                                 </div>
 
                                                 <div className="form-group col-md-12 pb-1 input-group-lg">
-                                                    <Field name="company-from" type="text" className="form-control" placeholder="Company Name"/>
+                                                    <Field name="companyFrom" type="text" className="form-control" placeholder="Company Name"/>
                                                 </div>
 
                                                 <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="street-address-from" type="text" className="form-control" placeholder="Street Address"/>
+                                                    <Field name="streetAddressFrom" type="text" className="form-control" placeholder="Street Address"/>
                                                 </div>
 
                                                 <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="city-from" type="text" className="form-control" placeholder="City"/>
+                                                    <Field name="cityFrom" type="text" className="form-control" placeholder="City"/>
                                                 </div>
 
                                                 <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                    <Field name="state-from" type="text" className="form-control" placeholder="State"/>
+                                                    <Field name="stateFrom" type="text" className="form-control" placeholder="State"/>
                                                 </div>
 
                                                 <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                    <Field name="zip-from" type="text" className="form-control" placeholder="Zip"/>
+                                                    <Field name="zipFrom" type="text" className="form-control" placeholder="Zip"/>
                                                 </div>
 
                                                 <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="phone-from" type="text" className="form-control" placeholder="Phone"/>
+                                                    <Field name="phoneFrom" type="text" className="form-control" placeholder="Phone"/>
                                                 </div>
 
                                                 {/* Bill to */}
@@ -191,35 +289,35 @@ class CreateInvoice extends React.Component<Props, State> {
                                                 </div>
 
                                                 <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="name-to" type="text" className="form-control" placeholder="Name"/>
+                                                    <Field name="nameTo" type="text" className="form-control" placeholder="Name"/>
                                                 </div>
 
                                                 <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="company-to" type="text" className="form-control" placeholder="Company Name"/>
+                                                    <Field name="companyTo" type="text" className="form-control" placeholder="Company Name"/>
                                                 </div>
 
                                                 <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="street-address-to" type="text" className="form-control" placeholder="Street Address"/>
+                                                    <Field name="streetAddressTo" type="text" className="form-control" placeholder="Street Address"/>
                                                 </div>
 
                                                 <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="city-to" type="text" className="form-control" placeholder="City"/>
+                                                    <Field name="cityTo" type="text" className="form-control" placeholder="City"/>
                                                 </div>
 
                                                 <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                    <Field name="state-to" type="text" className="form-control" placeholder="State"/>
+                                                    <Field name="stateTo" type="text" className="form-control" placeholder="State"/>
                                                 </div>
 
                                                 <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                    <Field name="zip-to" type="text" className="form-control" placeholder="Zip"/>
+                                                    <Field name="zipTo" type="text" className="form-control" placeholder="Zip"/>
                                                 </div>
 
                                                 <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="phone-to" type="text" className="form-control" placeholder="Phone"/>
+                                                    <Field name="phoneTo" type="text" className="form-control" placeholder="Phone"/>
                                                 </div>
 
                                                 <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="email-to" type="text" className="form-control" placeholder="Email"/>
+                                                    <Field name="emailTo" type="text" className="form-control" placeholder="Email"/>
                                                 </div>
 
                                             </div>
@@ -257,26 +355,27 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     </div>
                                                 </div>
 
-                                                {invoiceItems.map(item =>
+                                                {invoiceItems.map((item: InvoiceItem, index: number) =>
 
-                                                <div className="col-12 d-flex">
+                                                <div key={index} className="col-12 d-flex">
                                                     <div className="input-group-sm col-5">
-                                                        <Field name="value-desc" type="text" className="form-control text-start"/>
+                                                        <Field name={"value-desc-"+index} type="text" className="form-control text-start"/>
                                                     </div>
                                                     <div className="input-group-sm col-2">
-                                                        <Field name="value-price" type="text" className="form-control text-start"/>
+                                                        <Field name={"value-price-"+index} type="text" className="form-control text-start"/>
                                                     </div>
                                                     <div className="input-group-sm col-2">
-                                                        <Field name="value-qty" type="text" className="form-control text-start"/>
+                                                        <Field name={"value-qty"+index} type="text" className="form-control text-start"/>
                                                     </div>
                                                     <div className="input-group-sm col-3">
-                                                        <Field name="value-amt" type="text" className="form-control text-start"/>
+                                                        <Field name={"value-amt"+index} type="text" className="form-control text-start"/>
                                                     </div>
 
                                                     <button
                                                       type="button"
                                                       id="delete-item-btn"
                                                       className="btn p-0"
+                                                      onClick={() => this.removeItem(index)}
                                                     >
                                                         <i className="bi bi-trash align-self-center fs-5"></i>
                                                     </button>
@@ -295,7 +394,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     <button
                                                       type="button"
                                                       id="invoice-add-item-btn"
-                                                      className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-12"
+                                                      className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
                                                       onClick={() => this.addItem()}
                                                     >
                                                         <i className="bi bi-plus-circle align-self-center"></i>
@@ -306,14 +405,34 @@ class CreateInvoice extends React.Component<Props, State> {
                                                 </div>
 
                                                 {/* invoice summaries */}
-                                                <div className = "row d-flex col-md-4 col-sm-6">
+                                                <div className = "row col-md-4 col-sm-6">
 
-                                                    <div className="col-6 text-start">
-                                                        <span className="text-uppercase"> total </span>
+                                                    <div className="row d-flex">
+                                                        <div className="col-6 text-start">
+                                                            <span className="text-uppercase"> subtotal </span>
+                                                        </div>
+                                                        <div className="col-6 text-end">
+                                                            <span> {this.subtotal()} </span>
+                                                        </div>
                                                     </div>
 
-                                                    <div className="col-6 text-end">
-                                                        <span> 0.00 </span>
+                                                    <div className="row d-flex">
+                                                        <div className="col-6 text-start">
+                                                            <span className="text-uppercase"> tax </span>
+                                                        </div>
+                                                        <div className="col-6 text-end">
+                                                            <span> {tax} </span>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div className="row d-flex">
+                                                        <div className="col-6 text-start">
+                                                            <span className="text-uppercase fw-bold"> total due </span>
+                                                        </div>
+                                                        <div className="col-6 text-end fw-bold">
+                                                            <span> {totalDue} </span>
+                                                        </div>
                                                     </div>
 
                                                 </div>
@@ -326,7 +445,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     <button
                                                       type="button"
                                                       id="invoice-discard-btn"
-                                                      className="btn btn-sm btn-light rounded-pill p-2 mt-2 col-md-4 col-sm-4 me-auto"
+                                                      className="btn btn-sm btn-light rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto me-auto"
                                                     >
                                                         <i className="bi bi-x-circle align-self-center"></i>
                                                         <span className="mx-1"></span>
@@ -339,7 +458,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     <button
                                                       type="button"
                                                       id="invoice-draft-btn"
-                                                      className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 mx-4 ms-auto"
+                                                      className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
                                                     >
                                                         <i className="bi bi-check align-self-center"></i>
                                                         <span className="mx-1"></span>
@@ -347,9 +466,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     </button>
 
                                                     <button
-                                                      type="button"
+                                                      type="submit"
                                                       id="invoice-save-btn"
-                                                      className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4"
+                                                      className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
                                                     >
                                                         <i className="bi bi-check-circle align-self-center"></i>
                                                         <span className="mx-1"></span>

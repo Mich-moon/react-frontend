@@ -1,6 +1,6 @@
 import React from 'react';
 
-import User from './user.component';
+import Users from './user.component';
 import ErrorBoundary from './error-page.component';
 
 import UserService from "../services/UserService";
@@ -58,7 +58,7 @@ class BoardAdmin extends React.Component<Props, State> {
 
                     <hr/>
 
-                    <User/>
+                    <Users/>
                 </ErrorBoundary>
             </div>
         );

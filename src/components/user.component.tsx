@@ -66,7 +66,7 @@ interface State {
     deleteID: number | null
 };
 
-class User extends React.Component<Props, State> {
+class Users extends React.Component<Props, State> {
 
     // constructor() - is invoked before the component is mounted.
      constructor(props: Props) {
@@ -98,6 +98,14 @@ class User extends React.Component<Props, State> {
          });
      }
 
+    //  componentDidUpdate() - lifecycle method to execute code after the
+    //      component is updated in the DOM (Document Object Model).
+    componentDidUpdate() {
+
+        UserService.getUsers().then((response) => {
+            this.setState({ users: response.data.users });
+        });
+    }
 
     deleteUser() {
 
@@ -130,7 +138,8 @@ class User extends React.Component<Props, State> {
                     this.setState({
                         flash: true,
                         flashMessage: resMessage,
-                        flashType: "error"
+                        flashType: "error",
+                        deleteID: null
                     });
                 }
             );
@@ -240,4 +249,4 @@ class User extends React.Component<Props, State> {
      }
 }
 
-export default User
+export default Users

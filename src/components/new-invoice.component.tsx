@@ -34,10 +34,11 @@ interface Params {};
 type Props = WithRouterProps<Params>;
 
 type InvoiceItem = {
+    id: number,
     description: string,
-    price: number,
-    quantity: number,
-    amount: number
+    price: string,
+    quantity: string,
+    amount: string
 };
 
 type State = {
@@ -48,9 +49,12 @@ type State = {
     flashMessage: string,
     flashType: Color,
     invoiceItems: InvoiceItem[],
-    subtotal: number,
-    tax: number,
-    totalDue: number
+    subtotal: string,
+    tax: string,
+    taxRate: string,
+    totalDue: string,
+    lastInvoiceNum: string,
+    invoiceDate: string
 };
 
 class CreateInvoice extends React.Component<Props, State> {
@@ -68,21 +72,27 @@ class CreateInvoice extends React.Component<Props, State> {
             flashMessage: "",
             flashType: "info",
             invoiceItems: [{
+                id: 1,
                 description: "",
-                price: 0.00,
-                quantity: 0.00,
-                amount: 0.00
+                price: "0.00",
+                quantity: "0.00",
+                amount: "0.00"
             }],
-            subtotal: 0.00,
-            tax: 0.00,
-            totalDue: 0.00
+            subtotal: "0.00",
+            tax: "0.00",
+            taxRate: "0.00",
+            totalDue: "0.00",
+            lastInvoiceNum: "0000",
+            invoiceDate: "00-00-0000"
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.handleSubmit = this.handleSubmit.bind(this);
         this.addItem = this.addItem.bind(this);
         this.removeItem = this.removeItem.bind(this);
-
+        this.calculateSubtotal = this.calculateSubtotal.bind(this);
+        this.handleItemChange = this.handleItemChange.bind(this);
+        this.calculateAmountDue = this.calculateAmountDue.bind(this);
     }
 
     //  componentDidMount() - lifecycle method to execute code when the
@@ -90,7 +100,6 @@ class CreateInvoice extends React.Component<Props, State> {
     componentDidMount() {
 
         const { navigate } = this.props;  // params injected from HOC wrapper component
-
         const currentUser = AuthService.getCurrentUser();
 
         if (currentUser === null) {
@@ -98,6 +107,23 @@ class CreateInvoice extends React.Component<Props, State> {
         } else {
             this.setState({ currentUser: currentUser, userReady: true });
         }
+
+        // get date and format it
+        const today = new Date();
+        const yyyy = String( today.getFullYear() );
+        const mm = (today.getMonth() + 1) > 10 ? String( today.getMonth() + 1 ) : "0" + String( (today.getMonth() + 1) ); // Months start at 0!
+        const dd = today.getDate() > 10 ? String( today.getDate() ) : "0" + String( today.getDate() );
+        const formattedToday = dd + "/" + mm + "/" + yyyy;
+
+        this.setState({ invoiceDate: formattedToday });
+
+        // get id number of last invoice in database
+        //
+        this.setState({ lastInvoiceNum: "00001" });
+
+        // get tax rate
+        //
+        this.setState({ taxRate: "0.01" });
     }
 
     validationSchema() {
@@ -130,9 +156,7 @@ class CreateInvoice extends React.Component<Props, State> {
                  .required("This field is required!"),
             emailTo: Yup.string()
                  .required("This field is required!"),
-
         });
-
     }
 
     handleSubmit(formValue: { companyFrom: string; streetAddressFrom: string; cityFrom: string; zipFrom: string; phoneFrom: string;
@@ -144,31 +168,34 @@ class CreateInvoice extends React.Component<Props, State> {
                 nameTo, companyTo, streetAddressTo, cityTo, stateTo, zipTo, phoneTo, emailTo } = formValue; // get data from form
 
         console.log(companyFrom);
-
     }
 
     addItem() {
         // add a new item to the invoice
 
-        let items = this.state.invoiceItems;
-        items.push({
+        const { invoiceItems } = this.state;
+        const nextID = invoiceItems.length + 1;
+        const newList = invoiceItems.concat({
+            id: nextID,
             description: "",
-            price: 0.00,
-            quantity: 0.00,
-            amount: 0.00
+            price: "0.00",
+            quantity: "0.00",
+            amount: "0.00"
         });
-        this.setState({ invoiceItems: items });
+
+        this.setState({ invoiceItems: newList });
     }
 
     removeItem(index: number) {
         // remove an item from the invoice
 
-        let items = this.state.invoiceItems;
-        console.log(items);
+        const { invoiceItems } = this.state;
 
-        if (items.length !== 1) {
-            items.splice(index, 1);
-            this.setState({ invoiceItems: items });
+        if (invoiceItems.length !== 1) {
+            const newList = invoiceItems.filter((item, j) => index !== j);
+            this.setState({ invoiceItems: newList });
+            this.calculateSubtotal(); // recalculate subtotal
+            this.calculateAmountDue(); // recalculate amount due
 
         } else {
             // flash message for failure
@@ -185,25 +212,87 @@ class CreateInvoice extends React.Component<Props, State> {
         }
     }
 
-    subtotal() {
+    calculateSubtotal() {
 
-        let items = this.state.invoiceItems;
+        const { invoiceItems } = this.state;
+        let total = 0.00;
 
-        let total = items.reduce( function(accumulator=0, currentValue) {
+        try {
 
-            if (currentValue != null) {
-                return accumulator + currentValue.price;
+            invoiceItems.forEach(element => {
+                total += parseFloat(element.price) * parseInt(element.quantity);
+            });
+
+            this.setState({subtotal: String( total.toFixed(2) )});
+
+        } catch {}
+    }
+
+    handleItemChange(value: string, field: string, index: number) {
+        // update an invoice item
+
+        const { invoiceItems } = this.state;
+        const newList = invoiceItems.map((item, j) => {
+
+            if (j === index) {
+
+                try {
+                    if (field == "d") { // edit description
+                        item.description = value;
+
+                    } else if (field == "p") { // edit price
+                        if (!Number.isNaN( parseFloat(value) )) {
+                            item.price = value;
+                        }
+
+                    } else if (field == "q") { // edit quantity
+                        if (!Number.isNaN( parseInt(value) )) {
+                            item.quantity = value;
+                        }
+                    }
+
+                    // recalculate amount
+                    item.amount = String( ( parseFloat(item.price) * parseInt(item.quantity) ).toFixed(2) );
+
+                } catch {}
+
+                return item;
+            } else {
+                return item;
             }
-        }, 0);
+        });
 
-        return total;
+        this.setState({ invoiceItems: newList });
+        this.calculateSubtotal(); // recalculate subtotal
+        this.calculateAmountDue(); // recalculate amount due
+    }
+
+    calculateAmountDue() {
+
+        const { invoiceItems, taxRate } = this.state;
+        let total = 0.00;
+        let tax = 0.00;
+
+        try {
+
+            invoiceItems.forEach(element => {
+                total += parseFloat(element.amount);
+            });
+
+            console.log(total);
+            tax = total * ( parseFloat(taxRate) );
+            total += tax;
+            this.setState({totalDue: String( total.toFixed(2) )});
+            this.setState({tax: String( tax.toFixed(2) )});
+
+        } catch {}
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
         const { userReady, currentUser, loading, flash, flashMessage, flashType,
-                invoiceItems, subtotal, tax, totalDue } = this.state;
+                invoiceItems, subtotal, tax, totalDue, lastInvoiceNum, invoiceDate } = this.state;
 
         const initialValues = {
             companyFrom: "",
@@ -333,8 +422,8 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td> 001 </td>
-                                                                <td> 8/29/2022 </td>
+                                                                <td> {lastInvoiceNum} </td>
+                                                                <td> {invoiceDate} </td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -359,16 +448,42 @@ class CreateInvoice extends React.Component<Props, State> {
 
                                                 <div key={index} className="col-12 d-flex">
                                                     <div className="input-group-sm col-5">
-                                                        <Field name={"value-desc-"+index} type="text" className="form-control text-start"/>
+                                                        <Field
+                                                          name={"value-desc-"+index}
+                                                          type="text"
+                                                          className="form-control text-start"
+                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                            this.handleItemChange(e.currentTarget.value, "d", index)
+                                                          }
+                                                        />
                                                     </div>
                                                     <div className="input-group-sm col-2">
-                                                        <Field name={"value-price-"+index} type="text" className="form-control text-start"/>
+                                                        <Field
+                                                          name={"value-price-"+index}
+                                                          type="text"
+                                                          className="form-control text-start"
+                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                            this.handleItemChange(e.currentTarget.value, "p", index)
+                                                          }
+                                                        />
                                                     </div>
                                                     <div className="input-group-sm col-2">
-                                                        <Field name={"value-qty"+index} type="text" className="form-control text-start"/>
+                                                        <Field
+                                                          name={"value-qty"+index}
+                                                          type="text"
+                                                          className="form-control text-start"
+                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                            this.handleItemChange(e.currentTarget.value, "q", index)
+                                                          }
+                                                        />
                                                     </div>
                                                     <div className="input-group-sm col-3">
-                                                        <Field name={"value-amt"+index} type="text" className="form-control text-start"/>
+                                                        <Field
+                                                          name={"value-amt"+index}
+                                                          type="text"
+                                                          className="form-control text-start"
+                                                          value={invoiceItems[index].amount}
+                                                        />
                                                     </div>
 
                                                     <button
@@ -412,7 +527,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                             <span className="text-uppercase"> subtotal </span>
                                                         </div>
                                                         <div className="col-6 text-end">
-                                                            <span> {this.subtotal()} </span>
+                                                            <span> {subtotal} </span>
                                                         </div>
                                                     </div>
 

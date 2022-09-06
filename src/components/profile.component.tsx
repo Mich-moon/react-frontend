@@ -70,10 +70,19 @@ class Profile extends React.Component<Props, State> {
                     <div>
                         <header className="jumbotron">
                             <h3>
-                                <strong>{(currentUser != null) ? currentUser.email : null} </strong> Profile
+                                My Profile
                             </h3>
 
                         </header>
+
+                        <img
+                          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+                          alt="profile-img"
+                          className="profile-img-card my-4"
+                        />
+
+                        <hr className="pb-2"/>
+
                         <p>
                             <strong>Id:</strong>{" "}
                             {(currentUser != null) ? currentUser.id : null}

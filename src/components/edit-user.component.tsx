@@ -370,7 +370,7 @@ class EditUser extends React.Component<Props, State> {
                     <div>
                         <header className="jumbotron">
                             <h3>
-                                <strong> Edit User Page </strong> Profile
+                                <strong> Edit User Page </strong>
                             </h3>
                         </header>
 
@@ -383,7 +383,7 @@ class EditUser extends React.Component<Props, State> {
                         <hr className="pb-2"/>
 
                         {/* Edit general user details */}
-                        <h4> Biography </h4>
+                        <h4 className="mb-4"> Biography </h4>
                         <div className="row">
                             <div className = "col-md-6 col-sm-12">
                                 <table className = "table table-striped">
@@ -470,7 +470,7 @@ class EditUser extends React.Component<Props, State> {
                         <hr className="pb-2"/>
 
                         {/* Edit password */}
-                        <h4> Password </h4>
+                        <h4 className="mb-4"> Password </h4>
                         <div className="col-md-6 col-sm-12">
                             <Formik
                               initialValues={initialValuesPassword}
@@ -532,7 +532,7 @@ class EditUser extends React.Component<Props, State> {
                         <hr className="pb-2"/>
 
                         {/* Edit User Roles */}
-                        <h4> User Roles </h4>
+                        <h4 className="mb-4"> User Roles </h4>
 
                         {( appRoles && currentUser != null /* && currentUser.roles.includes(appRoles[0]) */ ) ? (
                         <div>

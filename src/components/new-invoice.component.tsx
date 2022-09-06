@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Navigate, useParams, Link } from "react-router-dom";
-import { Formik, Field, Form, ErrorMessage } from "formik";
+import { Formik, Field, Form, ErrorMessage, FieldArray } from "formik";
 import * as Yup from "yup";
 
 import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
@@ -156,16 +156,27 @@ class CreateInvoice extends React.Component<Props, State> {
                  .required("This field is required!"),
             emailTo: Yup.string()
                  .required("This field is required!"),
+            invoiceItems: Yup.array()
+                .of(
+                    Yup.object().shape({
+                        description: Yup.string().required("Description is required"),
+                        price: Yup.number().required("Price is required"),
+                        quantity: Yup.number().required("Quantity is required"),
+                        amount: Yup.number().required("Amount is required"),
+                    })
+                )
+                .required("Invalid invoice item(s)"),
         });
     }
 
     handleSubmit(formValue: { companyFrom: string; streetAddressFrom: string; cityFrom: string; zipFrom: string; phoneFrom: string;
                                nameTo: string; companyTo: string; streetAddressTo: string; cityTo: string; stateTo: string;
-                               zipTo: string; phoneTo: string; emailTo: string; }) {
+                               zipTo: string; phoneTo: string; emailTo: string; comments: string }) {
 
         // handle data from form submission
         const { companyFrom, streetAddressFrom, cityFrom, zipFrom, phoneFrom,
-                nameTo, companyTo, streetAddressTo, cityTo, stateTo, zipTo, phoneTo, emailTo } = formValue; // get data from form
+                nameTo, companyTo, streetAddressTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
+                comments } = formValue; // get data from form
 
         console.log(companyFrom);
     }
@@ -201,7 +212,7 @@ class CreateInvoice extends React.Component<Props, State> {
             // flash message for failure
             this.setState({
                 flash: true,
-                flashMessage: "Invoice must have at least one item",
+                flashMessage: "At least one invoice item is required",
                 flashType: "warning"
             });
 
@@ -308,7 +319,8 @@ class CreateInvoice extends React.Component<Props, State> {
             stateTo: "",
             zipTo: "",
             phoneTo: "000-0000",
-            emailTo: ""
+            emailTo: "",
+            comments: ""
         };
 
         return (
@@ -321,11 +333,15 @@ class CreateInvoice extends React.Component<Props, State> {
 
                 {(userReady && currentUser != null) ?
                     <div>
-                        <header className="jumbotron">
-                            <h3>
-                                <strong> Invoice </strong>
-                            </h3>
+                        <header className="jumbotron d-flex justify-content-between align-items-center mx-4">
+                            <img
+                              src="https://4m4you.com/wp-content/uploads/2020/06/logo-placeholder-300x120.png"
+                              alt="invoice-logo"
+                              className="invoice-logo mx-4"
+                            />
+                            <h3 className="mx-4"> Invoice </h3>
                         </header>
+                        <hr className="mb-4 mx-4"/>
                         <div className="">
 
                             <Formik
@@ -337,7 +353,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                 <Form>
                                     <div className="row m-0">
                                         <div className="row m-0 col-12">
-                                            <div className = "row mx-0 col-md-6 col-sm-12">
+                                            <div className = "row mx-0 gx-1 col-md-6 col-sm-12">
 
                                                 {/* Bill from */}
                                                 <div className="form-group col-md-12 pb-1">
@@ -431,9 +447,8 @@ class CreateInvoice extends React.Component<Props, State> {
                                             </div>
 
 
-
                                             {/* Items */}
-                                            <div className = "row mx-0 col-md-12">
+                                            <div className = "row mx-0 px-0 gx-1 col-md-12">
 
                                                 <div className="form-group col-12 pb-1 mt-4">
                                                     <div className="form-control col-md-12 border border-2 rounded-2 bg-light py-2 d-flex">
@@ -444,83 +459,86 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     </div>
                                                 </div>
 
-                                                {invoiceItems.map((item: InvoiceItem, index: number) =>
 
-                                                <div key={index} className="col-12 d-flex">
-                                                    <div className="input-group-sm col-5">
-                                                        <Field
-                                                          name={"value-desc-"+index}
-                                                          type="text"
-                                                          className="form-control text-start"
-                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                            this.handleItemChange(e.currentTarget.value, "d", index)
-                                                          }
-                                                        />
-                                                    </div>
-                                                    <div className="input-group-sm col-2">
-                                                        <Field
-                                                          name={"value-price-"+index}
-                                                          type="text"
-                                                          className="form-control text-start"
-                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                            this.handleItemChange(e.currentTarget.value, "p", index)
-                                                          }
-                                                        />
-                                                    </div>
-                                                    <div className="input-group-sm col-2">
-                                                        <Field
-                                                          name={"value-qty"+index}
-                                                          type="text"
-                                                          className="form-control text-start"
-                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                            this.handleItemChange(e.currentTarget.value, "q", index)
-                                                          }
-                                                        />
-                                                    </div>
-                                                    <div className="input-group-sm col-3">
-                                                        <Field
-                                                          name={"value-amt"+index}
-                                                          type="text"
-                                                          className="form-control text-start"
-                                                          value={invoiceItems[index].amount}
-                                                        />
-                                                    </div>
+                                                <FieldArray
+                                                   name="invoiceItems"
+                                                   render={arrayHelpers => (
+                                                    <div>
 
-                                                    <button
-                                                      type="button"
-                                                      id="delete-item-btn"
-                                                      className="btn p-0"
-                                                      onClick={() => this.removeItem(index)}
-                                                    >
-                                                        <i className="bi bi-trash align-self-center fs-5"></i>
-                                                    </button>
+                                                        {invoiceItems.map( (item: InvoiceItem, index: number) =>
 
-                                                </div>
+                                                        <div key={index} className="col-12 d-flex">
+                                                            <div className="input-group-sm col-5">
+                                                                <Field
+                                                                  name={`invoiceItems.${index}.description`}
+                                                                  type="text"
+                                                                  className="form-control text-start"
+                                                                  onChange={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                    this.handleItemChange(e.currentTarget.value, "d", index)
+                                                                  }
+                                                                />
+                                                            </div>
+                                                            <div className="input-group-sm col-2">
+                                                                <Field
+                                                                  name={`invoiceItems.${index}.price`}
+                                                                  type="text"
+                                                                  className="form-control text-start"
+                                                                  onChange={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                    this.handleItemChange(e.currentTarget.value, "p", index)
+                                                                  }
+                                                                />
+                                                            </div>
+                                                            <div className="input-group-sm col-2">
+                                                                <Field
+                                                                  name={`invoiceItems.${index}.quantity`}
+                                                                  type="text"
+                                                                  className="form-control text-start"
+                                                                  onChange={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                    this.handleItemChange(e.currentTarget.value, "q", index)
+                                                                  }
+                                                                />
+                                                            </div>
+                                                            <div className="input-group-sm col-3">
+                                                                <Field
+                                                                  name={`invoiceItems.${index}.amount`}
+                                                                  type="text"
+                                                                  className="form-control text-start"
+                                                                  value={invoiceItems[index].amount}
+                                                                />
+                                                            </div>
 
-                                                )}
+                                                            <button
+                                                              type="button"
+                                                              id="delete-item-btn"
+                                                              className="btn p-0"
+                                                              onClick={() => this.removeItem(index)}
+                                                            >
+                                                                <i className="bi bi-trash align-self-center fs-5"></i>
+                                                            </button>
+                                                        </div>
+                                                        )}
+
+                                                    </div>
+                                                    )}
+                                                />
+
+                                                {/* Error message for invoice items */}
+                                                <ErrorMessage name="invoiceItems" component="div" className="alert alert-danger"/>
 
                                             </div>
 
-                                            <div className = "row mx-0 col-12 pt-2 px-4 d-flex">
+                                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
 
-                                                {/* add item button */}
-                                                <div className = "row col-md-8 col-sm-6 flex-fill">
-
-                                                    <button
-                                                      type="button"
-                                                      id="invoice-add-item-btn"
-                                                      className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
-                                                      onClick={() => this.addItem()}
-                                                    >
-                                                        <i className="bi bi-plus-circle align-self-center"></i>
-                                                        <span className="mx-1"></span>
-                                                        <span className="align-self-center">Add Item</span>
-                                                    </button>
-
+                                                {/* comments */}
+                                                <div className = "row col-md-7 col-sm-12">
+                                                    <div className="form-control border border-2 rounded-2 bg-light">
+                                                        <span className=""> Comments </span>
+                                                    </div>
+                                                    <textarea name="comments" className="form-control input-group-sm"/>
                                                 </div>
 
                                                 {/* invoice summaries */}
-                                                <div className = "row col-md-4 col-sm-6">
+                                                <div className = "d-flex flex-column col-md-5 col-sm-12">
 
                                                     <div className="row d-flex">
                                                         <div className="col-6 text-start">
@@ -540,7 +558,6 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         </div>
                                                     </div>
 
-
                                                     <div className="row d-flex">
                                                         <div className="col-6 text-start">
                                                             <span className="text-uppercase fw-bold"> total due </span>
@@ -553,8 +570,26 @@ class CreateInvoice extends React.Component<Props, State> {
                                                 </div>
                                             </div>
 
+                                            {/* add item button */}
+                                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex">
+
+                                                <div className = "row col-md-8 col-sm-6 flex-fill mt-2">
+                                                    <button
+                                                      type="button"
+                                                      id="invoice-add-item-btn"
+                                                      className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
+                                                      onClick={() => this.addItem()}
+                                                    >
+                                                        <i className="bi bi-plus-circle align-self-center"></i>
+                                                        <span className="mx-1"></span>
+                                                        <span className="align-self-center">Add Item</span>
+                                                    </button>
+                                                </div>
+
+                                            </div>
+
                                             {/* control buttons */}
-                                            <div className = "row mx-0 col-12 pt-4 px-4 d-flex">
+                                            <div className = "row mx-0 px-0 gx-1 col-12 pt-4 d-flex">
 
                                                 <div className="row col-md-6 col-sm-12 flex-fill">
                                                     <button

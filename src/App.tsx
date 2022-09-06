@@ -84,7 +84,7 @@ class App extends React.Component<Props, State> {
     // jquery
     JQueryCode = () => {
         $('#sidebarCollapse').on('click', function () {
-            console.log('pressed');
+            //console.log('sidebar toggle pressed');
         });
     }
 
@@ -98,11 +98,11 @@ class App extends React.Component<Props, State> {
         if (this.state.sidebarOpen) {
             this.setState({ sidebarOpen: false });
             this.setState({ sidebarDocked: false });
-            console.log("changed to false");
+            //console.log("changed to false");
         } else {
             this.setState({ sidebarOpen: true });
             this.setState({ sidebarDocked: true });
-            console.log("changed to true");
+            //console.log("changed to true");
         }
     }
 

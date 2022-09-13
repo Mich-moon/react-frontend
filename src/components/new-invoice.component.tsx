@@ -8,6 +8,7 @@ import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
 import Fade from '@material-ui/core/Fade';   // for flash message fade
 
 import AuthService from "../services/AuthService";
+import InvoiceService from "../services/InvoiceService";
 
 import styles from "../css/alert.module.css";
 
@@ -34,7 +35,6 @@ interface Params {};
 type Props = WithRouterProps<Params>;
 
 type InvoiceItem = {
-    id: number,
     description: string,
     price: string,
     quantity: string,
@@ -72,10 +72,9 @@ class CreateInvoice extends React.Component<Props, State> {
             flashMessage: "",
             flashType: "info",
             invoiceItems: [{
-                id: 1,
                 description: "",
                 price: "0.00",
-                quantity: "0.00",
+                quantity: "0",
                 amount: "0.00"
             }],
             subtotal: "0.00",
@@ -132,9 +131,11 @@ class CreateInvoice extends React.Component<Props, State> {
         return Yup.object().shape({
             companyFrom: Yup.string()
                 .required("This field is required!"),
-            streetAddressFrom: Yup.string()
+            streetFrom: Yup.string()
                 .required("This field is required!"),
             cityFrom: Yup.string()
+                 .required("This field is required!"),
+            stateFrom: Yup.string()
                  .required("This field is required!"),
             zipFrom: Yup.string()
                  .required("This field is required!"),
@@ -144,7 +145,7 @@ class CreateInvoice extends React.Component<Props, State> {
                  .required("This field is required!"),
             companyTo: Yup.string()
                  .required("This field is required!"),
-            streetAddressTo: Yup.string()
+            streetTo: Yup.string()
                  .required("This field is required!"),
             cityTo: Yup.string()
                  .required("This field is required!"),
@@ -155,8 +156,9 @@ class CreateInvoice extends React.Component<Props, State> {
             phoneTo: Yup.string()
                  .required("This field is required!"),
             emailTo: Yup.string()
+                 .email("This is not a valid email!")
                  .required("This field is required!"),
-            invoiceItems: Yup.array()
+            formInvoiceItems: Yup.array()
                 .of(
                     Yup.object().shape({
                         description: Yup.string().required("Description is required"),
@@ -169,28 +171,64 @@ class CreateInvoice extends React.Component<Props, State> {
         });
     }
 
-    handleSubmit(formValue: { companyFrom: string; streetAddressFrom: string; cityFrom: string; zipFrom: string; phoneFrom: string;
-                               nameTo: string; companyTo: string; streetAddressTo: string; cityTo: string; stateTo: string;
+    handleSubmit(formValue: { companyFrom: string; streetFrom: string; cityFrom: string; stateFrom: string; zipFrom: string; phoneFrom: string;
+                               nameTo: string; companyTo: string; streetTo: string; cityTo: string; stateTo: string;
                                zipTo: string; phoneTo: string; emailTo: string; comments: string }) {
 
         // handle data from form submission
-        const { companyFrom, streetAddressFrom, cityFrom, zipFrom, phoneFrom,
-                nameTo, companyTo, streetAddressTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
+        const { companyFrom, streetFrom, cityFrom, stateFrom, zipFrom, phoneFrom,
+                nameTo, companyTo, streetTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
                 comments } = formValue; // get data from form
 
-        console.log(companyFrom);
+        const { invoiceItems, currentUser } = this.state;
+
+        this.setState({ loading: true });
+
+        if (currentUser != null) {
+            let createdBy = currentUser.id;
+
+            InvoiceService.createInvoice({companyFrom, streetFrom, cityFrom, stateFrom, zipFrom, phoneFrom,
+                                         nameTo, companyTo, streetTo, cityTo, stateTo, zipTo,
+                                         phoneTo, emailTo, invoiceItems, comments, createdBy})
+            .then(
+                response => { // creation successful
+
+                    this.setState({
+                        flash: true,
+                        flashMessage: response.data.message,
+                        flashType: "success",
+                        loading: false
+                    });
+                },
+                error => { // creation not successful
+
+                    const resMessage =
+                        (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                        error.message ||
+                        error.toString();
+
+                    this.setState({
+                        flash: true,
+                        flashMessage: resMessage,
+                        flashType: "error",
+                        loading: false
+                    });
+                }
+            );
+            console.log("created by id: "+ createdBy);
+        }
     }
 
     addItem() {
         // add a new item to the invoice
 
         const { invoiceItems } = this.state;
-        const nextID = invoiceItems.length + 1;
         const newList = invoiceItems.concat({
-            id: nextID,
             description: "",
             price: "0.00",
-            quantity: "0.00",
+            quantity: "0",
             amount: "0.00"
         });
 
@@ -239,11 +277,19 @@ class CreateInvoice extends React.Component<Props, State> {
         } catch {}
     }
 
-    handleItemChange(value: string, field: string, index: number) {
-        // update an invoice item
+    handleItemChange(newList: InvoiceItem[]) {
+        // update invoice items maintained in state - for calculation purposes
 
-        const { invoiceItems } = this.state;
-        const newList = invoiceItems.map((item, j) => {
+        //const { invoiceItems } = this.state;
+
+        for (let i in newList) {
+            try {
+                let item = newList[i];
+                item.amount = String( ( parseFloat(item.price) * parseInt(item.quantity) ).toFixed(2) );
+            } catch {}
+        }
+
+/*        const newList = invoiceItems.map((item, j) => {
 
             if (j === index) {
 
@@ -272,7 +318,8 @@ class CreateInvoice extends React.Component<Props, State> {
                 return item;
             }
         });
-
+*/
+        //console.log(newList);
         this.setState({ invoiceItems: newList });
         this.calculateSubtotal(); // recalculate subtotal
         this.calculateAmountDue(); // recalculate amount due
@@ -307,19 +354,25 @@ class CreateInvoice extends React.Component<Props, State> {
 
         const initialValues = {
             companyFrom: "",
-            streetAddressFrom: "",
+            streetFrom: "",
             cityFrom: "",
             stateFrom: "",
             zipFrom: "",
-            phoneFrom: "000-0000",
+            phoneFrom: "",
             nameTo: "",
             companyTo: "",
-            streetAddressTo: "",
+            streetTo: "",
             cityTo: "",
             stateTo: "",
             zipTo: "",
-            phoneTo: "000-0000",
+            phoneTo: "",
             emailTo: "",
+            formInvoiceItems: [{
+                description: "",
+                price: "0.00",
+                quantity: "0",
+                amount: "0.00"
+            }],
             comments: ""
         };
 
@@ -349,289 +402,361 @@ class CreateInvoice extends React.Component<Props, State> {
                               validationSchema={this.validationSchema}
                               onSubmit={this.handleSubmit}  // onSubmit function executes if there are no errors
                             >
+                                {({ values, errors, touched, handleReset }) => (
+                                    <Form>
+                                        <div className="row m-0">
+                                            <div className="row m-0 col-12">
+                                                <div className = "row mx-0 gx-1 col-md-6 col-sm-12">
 
-                                <Form>
-                                    <div className="row m-0">
-                                        <div className="row m-0 col-12">
-                                            <div className = "row mx-0 gx-1 col-md-6 col-sm-12">
-
-                                                {/* Bill from */}
-                                                <div className="form-group col-md-12 pb-1">
-                                                    <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
-                                                        <strong className=""> Bill to </strong>
+                                                    {/* Bill from */}
+                                                    <div className="form-group col-md-12 pb-1">
+                                                        <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
+                                                            <strong className=""> Bill from </strong>
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="form-group col-md-12 pb-1 input-group-lg">
-                                                    <Field name="companyFrom" type="text" className="form-control" placeholder="Company Name"/>
-                                                </div>
-
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="streetAddressFrom" type="text" className="form-control" placeholder="Street Address"/>
-                                                </div>
-
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="cityFrom" type="text" className="form-control" placeholder="City"/>
-                                                </div>
-
-                                                <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                    <Field name="stateFrom" type="text" className="form-control" placeholder="State"/>
-                                                </div>
-
-                                                <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                    <Field name="zipFrom" type="text" className="form-control" placeholder="Zip"/>
-                                                </div>
-
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="phoneFrom" type="text" className="form-control" placeholder="Phone"/>
-                                                </div>
-
-                                                {/* Bill to */}
-                                                <div className="form-group col-md-12 pb-1 mt-4">
-                                                    <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
-                                                        <strong className=""> Bill to </strong>
+                                                    <div className="form-group col-md-12 pb-1 input-group-lg">
+                                                        <Field
+                                                          name="companyFrom"
+                                                          type="text"
+                                                          className={errors.companyFrom && touched.companyFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Company Name"
+                                                        />
                                                     </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="streetFrom"
+                                                          type="text"
+                                                          className={errors.streetFrom && touched.streetFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Street Address"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-6 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="cityFrom"
+                                                          type="text"
+                                                          className={errors.cityFrom && touched.cityFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="City"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-4 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="stateFrom"
+                                                          type="text"
+                                                          className={errors.stateFrom && touched.stateFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="State"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-2 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="zipFrom"
+                                                          type="text"
+                                                          className={errors.zipFrom && touched.zipFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Zip"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="phoneFrom"
+                                                          type="text"
+                                                          className={errors.phoneFrom && touched.phoneFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Phone"
+                                                        />
+                                                    </div>
+
+                                                    {/* Bill to */}
+                                                    <div className="form-group col-md-12 pb-1 mt-4">
+                                                        <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
+                                                            <strong className=""> Bill to </strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="nameTo"
+                                                          type="text"
+                                                          className={errors.nameTo && touched.nameTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Name"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="companyTo"
+                                                          type="text"
+                                                          className={errors.companyTo && touched.companyTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Company Name"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="streetTo"
+                                                          type="text"
+                                                          className={errors.streetTo && touched.streetTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Street Address"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-6 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="cityTo"
+                                                          type="text"
+                                                          className={errors.cityTo && touched.cityTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="City"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-4 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="stateTo"
+                                                          type="text"
+                                                          className={errors.stateTo && touched.stateTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="State"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-2 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="zipTo"
+                                                          type="text"
+                                                          className={errors.zipTo && touched.zipTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Zip"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-6 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="phoneTo"
+                                                          type="text"
+                                                          className={errors.phoneTo && touched.phoneTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Phone"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-6 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="emailTo"
+                                                          type="text"
+                                                          className={errors.emailTo && touched.emailTo ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Email"
+                                                        />
+                                                    </div>
+
                                                 </div>
 
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="nameTo" type="text" className="form-control" placeholder="Name"/>
-                                                </div>
-
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="companyTo" type="text" className="form-control" placeholder="Company Name"/>
-                                                </div>
-
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <Field name="streetAddressTo" type="text" className="form-control" placeholder="Street Address"/>
-                                                </div>
-
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="cityTo" type="text" className="form-control" placeholder="City"/>
-                                                </div>
-
-                                                <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                    <Field name="stateTo" type="text" className="form-control" placeholder="State"/>
-                                                </div>
-
-                                                <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                    <Field name="zipTo" type="text" className="form-control" placeholder="Zip"/>
-                                                </div>
-
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="phoneTo" type="text" className="form-control" placeholder="Phone"/>
-                                                </div>
-
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <Field name="emailTo" type="text" className="form-control" placeholder="Email"/>
-                                                </div>
-
-                                            </div>
-
-                                            <div className = "col-md-6 col-sm-12">
-                                                <div className="border border-2 rounded-2 mx-2">
-                                                    <table className="table table-bordered-dark mb-0">
-                                                        <thead className="table-light">
-                                                            <tr>
-                                                                <th> INVOICE # </th>
-                                                                <th> DATE </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td> {lastInvoiceNum} </td>
-                                                                <td> {invoiceDate} </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-
-
-                                            {/* Items */}
-                                            <div className = "row mx-0 px-0 gx-1 col-md-12">
-
-                                                <div className="form-group col-12 pb-1 mt-4">
-                                                    <div className="form-control col-md-12 border border-2 rounded-2 bg-light py-2 d-flex">
-                                                        <strong className="col-5"> Description </strong>
-                                                        <strong className="col-2"> Price </strong>
-                                                        <strong className="col-2"> Quantity </strong>
-                                                        <strong className="col-3"> Amount </strong>
+                                                <div className = "col-md-6 col-sm-12">
+                                                    <div className="border border-2 rounded-2 mx-2">
+                                                        <table className="table table-bordered-dark mb-0">
+                                                            <thead className="table-light">
+                                                                <tr>
+                                                                    <th> INVOICE # </th>
+                                                                    <th> DATE </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td> {lastInvoiceNum} </td>
+                                                                    <td> {invoiceDate} </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
                                                     </div>
                                                 </div>
 
 
                                                 <FieldArray
-                                                   name="invoiceItems"
-                                                   render={arrayHelpers => (
+                                                  name="formInvoiceItems"
+                                                  render={ ({ remove, push }) => (
+
                                                     <div>
 
-                                                        {invoiceItems.map( (item: InvoiceItem, index: number) =>
+                                                        {/* Items */}
+                                                        <div className = "row mx-0 px-0 gx-1 col-md-12">
 
-                                                        <div key={index} className="col-12 d-flex">
-                                                            <div className="input-group-sm col-5">
-                                                                <Field
-                                                                  name={`invoiceItems.${index}.description`}
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  onChange={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                                    this.handleItemChange(e.currentTarget.value, "d", index)
-                                                                  }
-                                                                />
-                                                            </div>
-                                                            <div className="input-group-sm col-2">
-                                                                <Field
-                                                                  name={`invoiceItems.${index}.price`}
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  onChange={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                                    this.handleItemChange(e.currentTarget.value, "p", index)
-                                                                  }
-                                                                />
-                                                            </div>
-                                                            <div className="input-group-sm col-2">
-                                                                <Field
-                                                                  name={`invoiceItems.${index}.quantity`}
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  onChange={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                                    this.handleItemChange(e.currentTarget.value, "q", index)
-                                                                  }
-                                                                />
-                                                            </div>
-                                                            <div className="input-group-sm col-3">
-                                                                <Field
-                                                                  name={`invoiceItems.${index}.amount`}
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  value={invoiceItems[index].amount}
-                                                                />
+                                                            <div className="form-group col-12 pb-1 mt-4">
+                                                                <div className="form-control col-md-12 border border-2 rounded-2 bg-light py-2 d-flex">
+                                                                    <strong className="col-5"> Description </strong>
+                                                                    <strong className="col-2"> Price </strong>
+                                                                    <strong className="col-2"> Quantity </strong>
+                                                                    <strong className="col-3"> Amount </strong>
+                                                                </div>
                                                             </div>
 
-                                                            <button
-                                                              type="button"
-                                                              id="delete-item-btn"
-                                                              className="btn p-0"
-                                                              onClick={() => this.removeItem(index)}
-                                                            >
-                                                                <i className="bi bi-trash align-self-center fs-5"></i>
-                                                            </button>
+                                                            {values.formInvoiceItems && values.formInvoiceItems.map( (item: InvoiceItem, index: number) =>
+
+                                                                <div key={index} className="col-12 d-flex">
+                                                                    <div className="input-group-sm col-5">
+                                                                        <Field
+                                                                          name={`formInvoiceItems.[${index}].description`}
+                                                                          type="text"
+                                                                          //className={errors.formInvoiceItems && errors.formInvoiceItems[index].description && touched ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                          onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                            this.handleItemChange(values.formInvoiceItems)
+                                                                          }
+                                                                        />
+                                                                    </div>
+                                                                    <div className="input-group-sm col-2">
+                                                                        <Field
+                                                                          name={`formInvoiceItems.[${index}].price`}
+                                                                          type="text"
+                                                                          className="form-control text-start"
+                                                                          onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                            this.handleItemChange(values.formInvoiceItems)
+                                                                          }
+                                                                        />
+                                                                    </div>
+                                                                    <div className="input-group-sm col-2">
+                                                                        <Field
+                                                                          name={`formInvoiceItems.[${index}].quantity`}
+                                                                          type="text"
+                                                                          className="form-control text-start"
+                                                                          onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                            this.handleItemChange(values.formInvoiceItems)
+                                                                          }
+                                                                        />
+                                                                    </div>
+                                                                    <div className="input-group-sm col-3">
+                                                                        <Field
+                                                                          name={`formInvoiceItems.[${index}].amount`}
+                                                                          type="text"
+                                                                          className="form-control text-start"
+                                                                          value={invoiceItems[index].amount}
+                                                                        />
+                                                                    </div>
+
+                                                                    <button
+                                                                      type="button"
+                                                                      id="delete-item-btn"
+                                                                      className="btn p-0"
+                                                                      onClick={() => {  values.formInvoiceItems.length <= 1 ? console.log("") :  remove(index); this.removeItem(index) } }
+                                                                    >
+                                                                        <i className="bi bi-trash align-self-center fs-5"></i>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+
+
+                                                            {/* Error message for invoice items */}
+                                                            {/* <ErrorMessage name="formInvoiceItems" component="div" className="alert alert-danger"/> */}
+
                                                         </div>
-                                                        )}
+
+                                                        <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
+
+                                                            {/* comments */}
+                                                            <div className = "row col-md-7 col-sm-12">
+                                                                <div className="form-control border border-2 rounded-2 bg-light">
+                                                                    <span className=""> Comments </span>
+                                                                </div>
+                                                                <textarea name="comments" className="form-control input-group-sm"/>
+                                                            </div>
+
+                                                            {/* invoice summaries */}
+                                                            <div className = "d-flex flex-column col-md-5 col-sm-12">
+
+                                                                <div className="row d-flex">
+                                                                    <div className="col-6 text-start">
+                                                                        <span className="text-uppercase"> subtotal </span>
+                                                                    </div>
+                                                                    <div className="col-6 text-end">
+                                                                        <span> {subtotal} </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="row d-flex">
+                                                                    <div className="col-6 text-start">
+                                                                        <span className="text-uppercase"> tax </span>
+                                                                    </div>
+                                                                    <div className="col-6 text-end">
+                                                                        <span> {tax} </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="row d-flex">
+                                                                    <div className="col-6 text-start">
+                                                                        <span className="text-uppercase fw-bold"> total due </span>
+                                                                    </div>
+                                                                    <div className="col-6 text-end fw-bold">
+                                                                        <span> {totalDue} </span>
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+
+                                                        {/* add item button */}
+                                                        <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex">
+
+                                                            <div className = "row col-md-8 col-sm-6 flex-fill mt-2">
+                                                                <button
+                                                                  type="button"
+                                                                  id="invoice-add-item-btn"
+                                                                  className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
+                                                                  onClick={() => { this.addItem(); push( { description: "", price: "0.00", quantity: "0", amount: "0.00"} ) } }
+                                                                >
+                                                                    <i className="bi bi-plus-circle align-self-center"></i>
+                                                                    <span className="mx-1"></span>
+                                                                    <span className="align-self-center">Add Item</span>
+                                                                </button>
+                                                            </div>
+
+                                                        </div>
 
                                                     </div>
-                                                    )}
+                                                  )}
                                                 />
 
-                                                {/* Error message for invoice items */}
-                                                <ErrorMessage name="invoiceItems" component="div" className="alert alert-danger"/>
+                                                {/* control buttons */}
+                                                <div className = "row mx-0 px-0 gx-1 col-12 pt-4 d-flex">
 
-                                            </div>
-
-                                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
-
-                                                {/* comments */}
-                                                <div className = "row col-md-7 col-sm-12">
-                                                    <div className="form-control border border-2 rounded-2 bg-light">
-                                                        <span className=""> Comments </span>
-                                                    </div>
-                                                    <textarea name="comments" className="form-control input-group-sm"/>
-                                                </div>
-
-                                                {/* invoice summaries */}
-                                                <div className = "d-flex flex-column col-md-5 col-sm-12">
-
-                                                    <div className="row d-flex">
-                                                        <div className="col-6 text-start">
-                                                            <span className="text-uppercase"> subtotal </span>
-                                                        </div>
-                                                        <div className="col-6 text-end">
-                                                            <span> {subtotal} </span>
-                                                        </div>
+                                                    <div className="row col-md-6 col-sm-12 flex-fill">
+                                                        <button
+                                                          type="button"
+                                                          id="invoice-discard-btn"
+                                                          className="btn btn-sm btn-light rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto me-auto"
+                                                        >
+                                                            <i className="bi bi-x-circle align-self-center"></i>
+                                                            <span className="mx-1"></span>
+                                                            <span className="align-self-center">Discard</span>
+                                                        </button>
                                                     </div>
 
-                                                    <div className="row d-flex">
-                                                        <div className="col-6 text-start">
-                                                            <span className="text-uppercase"> tax </span>
-                                                        </div>
-                                                        <div className="col-6 text-end">
-                                                            <span> {tax} </span>
-                                                        </div>
+                                                    <div className="row col-md-6 col-sm-12">
+
+                                                        <button
+                                                          type="button"
+                                                          id="invoice-draft-btn"
+                                                          className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
+                                                        >
+                                                            <i className="bi bi-check align-self-center"></i>
+                                                            <span className="mx-1"></span>
+                                                            <span className="align-self-center">Draft</span>
+                                                        </button>
+
+                                                        <button
+                                                          type="submit"
+                                                          id="invoice-save-btn"
+                                                          className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
+                                                        >
+                                                            <i className="bi bi-check-circle align-self-center"></i>
+                                                            <span className="mx-1"></span>
+                                                            <span className="align-self-center">Save</span>
+                                                        </button>
+
                                                     </div>
-
-                                                    <div className="row d-flex">
-                                                        <div className="col-6 text-start">
-                                                            <span className="text-uppercase fw-bold"> total due </span>
-                                                        </div>
-                                                        <div className="col-6 text-end fw-bold">
-                                                            <span> {totalDue} </span>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-
-                                            {/* add item button */}
-                                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex">
-
-                                                <div className = "row col-md-8 col-sm-6 flex-fill mt-2">
-                                                    <button
-                                                      type="button"
-                                                      id="invoice-add-item-btn"
-                                                      className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
-                                                      onClick={() => this.addItem()}
-                                                    >
-                                                        <i className="bi bi-plus-circle align-self-center"></i>
-                                                        <span className="mx-1"></span>
-                                                        <span className="align-self-center">Add Item</span>
-                                                    </button>
-                                                </div>
-
-                                            </div>
-
-                                            {/* control buttons */}
-                                            <div className = "row mx-0 px-0 gx-1 col-12 pt-4 d-flex">
-
-                                                <div className="row col-md-6 col-sm-12 flex-fill">
-                                                    <button
-                                                      type="button"
-                                                      id="invoice-discard-btn"
-                                                      className="btn btn-sm btn-light rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto me-auto"
-                                                    >
-                                                        <i className="bi bi-x-circle align-self-center"></i>
-                                                        <span className="mx-1"></span>
-                                                        <span className="align-self-center">Discard</span>
-                                                    </button>
-                                                </div>
-
-                                                <div className="row col-md-6 col-sm-12">
-
-                                                    <button
-                                                      type="button"
-                                                      id="invoice-draft-btn"
-                                                      className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
-                                                    >
-                                                        <i className="bi bi-check align-self-center"></i>
-                                                        <span className="mx-1"></span>
-                                                        <span className="align-self-center">Draft</span>
-                                                    </button>
-
-                                                    <button
-                                                      type="submit"
-                                                      id="invoice-save-btn"
-                                                      className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
-                                                    >
-                                                        <i className="bi bi-check-circle align-self-center"></i>
-                                                        <span className="mx-1"></span>
-                                                        <span className="align-self-center">Save</span>
-                                                    </button>
 
                                                 </div>
 
                                             </div>
-
                                         </div>
-                                    </div>
-                                </Form>
+                                    </Form>
+                                )}
                             </Formik>
 
                         </div>

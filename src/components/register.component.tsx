@@ -13,17 +13,6 @@ type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"; // possible user 
 type Props = {};
 
 type State = {
-    /** The user's first name */
-    firstname: string,
-
-    /** The user's last name */
-    lastname: string,
-
-    /** The user's email */
-    email: string,
-
-    /** The user's password */
-    password: string,
 
     /** The user's role(s) */
     role: RoleEnum[],
@@ -44,10 +33,6 @@ class Register extends React.Component<Props, State> {
         // declare state variables
         super(props);
         this.state = {
-            firstname: "",
-            lastname: "",
-            email: "",
-            password: "",
             role: ["ROLE_USER"],
             successful: false,
             message: ""

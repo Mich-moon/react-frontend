@@ -14,12 +14,6 @@ type Props = {};
 
 type State = {
 
-    /** The user's email */
-    email: string,
-
-    /** The user's password */
-    password: string,
-
     /** Whether to show loading circle animation */
     loading: boolean,
 
@@ -36,8 +30,6 @@ class Login extends React.Component<Props, State> {
         // declare state variables
         super(props);
         this.state = {
-            email: "",
-            password: "",
             loading: false,
             message: ""
         };

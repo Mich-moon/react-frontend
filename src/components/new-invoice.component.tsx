@@ -162,9 +162,9 @@ class CreateInvoice extends React.Component<Props, State> {
                 .of(
                     Yup.object().shape({
                         description: Yup.string().required("Description is required"),
-                        price: Yup.number().required("Price is required"),
-                        quantity: Yup.number().required("Quantity is required"),
-                        amount: Yup.number().required("Amount is required"),
+                        price: Yup.string().required("Price is required"),
+                        quantity: Yup.string().required("Quantity is required"),
+                        amount: Yup.string().required("Amount is required"),
                     })
                 )
                 .required("Invalid invoice item(s)"),
@@ -421,6 +421,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.companyFrom && touched.companyFrom ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Company Name"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.companyFrom && touched.companyFrom ? errors.companyFrom : ''}
                                                         />
                                                     </div>
 
@@ -430,6 +433,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.streetFrom && touched.streetFrom ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Street Address"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.streetFrom && touched.streetFrom ? errors.streetFrom : ''}
                                                         />
                                                     </div>
 
@@ -439,6 +445,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.cityFrom && touched.cityFrom ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="City"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.cityFrom && touched.cityFrom ? errors.cityFrom : ''}
                                                         />
                                                     </div>
 
@@ -448,6 +457,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.stateFrom && touched.stateFrom ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="State"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.stateFrom && touched.stateFrom ? errors.stateFrom : ''}
                                                         />
                                                     </div>
 
@@ -457,6 +469,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.zipFrom && touched.zipFrom ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Zip"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.zipFrom && touched.zipFrom ? errors.zipFrom : ''}
                                                         />
                                                     </div>
 
@@ -466,6 +481,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.phoneFrom && touched.phoneFrom ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Phone"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.phoneFrom && touched.phoneFrom ? errors.phoneFrom : ''}
                                                         />
                                                     </div>
 
@@ -482,6 +500,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.nameTo && touched.nameTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Name"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.nameTo && touched.nameTo ? errors.nameTo : ''}
                                                         />
                                                     </div>
 
@@ -491,6 +512,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.companyTo && touched.companyTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Company Name"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.companyTo && touched.companyTo ? errors.companyTo : ''}
                                                         />
                                                     </div>
 
@@ -500,6 +524,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.streetTo && touched.streetTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Street Address"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.streetTo && touched.streetTo ? errors.streetTo : ''}
                                                         />
                                                     </div>
 
@@ -509,6 +536,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.cityTo && touched.cityTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="City"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.cityTo && touched.cityTo ? errors.cityTo : ''}
                                                         />
                                                     </div>
 
@@ -518,6 +548,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.stateTo && touched.stateTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="State"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.stateTo && touched.stateTo ? errors.stateTo : ''}
                                                         />
                                                     </div>
 
@@ -527,6 +560,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.zipTo && touched.zipTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Zip"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.zipTo && touched.zipTo ? errors.zipTo : ''}
                                                         />
                                                     </div>
 
@@ -536,6 +572,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.phoneTo && touched.phoneTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Phone"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.phoneTo && touched.phoneTo ? errors.phoneTo : ''}
                                                         />
                                                     </div>
 
@@ -545,6 +584,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="text"
                                                           className={errors.emailTo && touched.emailTo ? 'form-control is-invalid' : 'form-control'}
                                                           placeholder="Email"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.emailTo && touched.emailTo ? errors.emailTo : ''}
                                                         />
                                                     </div>
 
@@ -595,7 +637,10 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                         <Field
                                                                           name={`formInvoiceItems.[${index}].description`}
                                                                           type="text"
-                                                                          //className={errors.formInvoiceItems && errors.formInvoiceItems[index].description && touched ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                          className={errors.formInvoiceItems && (errors.formInvoiceItems[index] as InvoiceItem).description && touched.formInvoiceItems && touched.formInvoiceItems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                          data-bs-toggle="tooltip"
+                                                                          data-bs-placement="top"
+                                                                          title={errors.formInvoiceItems && (errors.formInvoiceItems[index] as InvoiceItem).description && touched.formInvoiceItems && touched.formInvoiceItems[index].description ? (errors.formInvoiceItems[index] as InvoiceItem).description : ''}
                                                                           onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
                                                                             this.handleItemChange(values.formInvoiceItems)
                                                                           }
@@ -643,7 +688,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
 
                                                             {/* Error message for invoice items */}
-                                                            {/* <ErrorMessage name="formInvoiceItems" component="div" className="alert alert-danger"/> */}
+                                                            <ErrorMessage name="formInvoiceItems" component="div" className="alert alert-danger"/>
 
                                                         </div>
 

@@ -37,7 +37,25 @@ type IStatus = "draft" | "pending" | "approved" | "paid"
 class InvoiceService {
 
     createInvoice(invoice: Invoice) {
-        return axiosInstance.post(INVOICES_REST_API_URL, invoice);
+        return axiosInstance.post(INVOICES_REST_API_URL, {
+            companyFrom: invoice.companyFrom,
+            streetFrom: invoice.streetFrom,
+            cityFrom: invoice.cityFrom,
+            stateFrom: invoice.stateFrom,
+            zipFrom: invoice.zipFrom,
+            phoneFrom: invoice.phoneFrom,
+            nameTo: invoice.nameTo,
+            companyTo: invoice.companyTo,
+            streetTo: invoice.streetTo,
+            cityTo: invoice.cityTo,
+            stateTo: invoice.stateTo,
+            zipTo: invoice.zipTo,
+            phoneTo: invoice.phoneTo,
+            emailTo: invoice.emailTo,
+            items: invoice.invoiceItems,
+            comments: invoice.comments,
+            createdBy: invoice.createdBy
+        });
     }
 
     getInvoices() {

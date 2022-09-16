@@ -2,37 +2,13 @@
 
 import axiosInstance from './MyAxios';
 
-const INVOICES_REST_API_URL = 'http://localhost:8080/api/invoices/';
-
 // types and interfaces
-type InvoiceItem = {
-    description: string,
-    price: string,
-    quantity: string,
-    amount: string
-};
-
-type Invoice = {
-    companyFrom: string,
-    streetFrom: string,
-    cityFrom: string;
-    stateFrom: string,
-    zipFrom: string,
-    phoneFrom: string,
-    nameTo: string,
-    companyTo: string,
-    streetTo: string,
-    cityTo: string,
-    stateTo: string,
-    zipTo: string,
-    phoneTo: string,
-    emailTo: string,
-    invoiceItems: InvoiceItem[],
-    comments: string,
-    createdBy: number
-};
+import { InvoiceItem } from '../types/invoice.type'
+import { Invoice } from '../types/invoice.type'
 
 type IStatus = "draft" | "pending" | "approved" | "paid"
+
+const INVOICES_REST_API_URL = 'http://localhost:8080/api/invoices/';
 
 class InvoiceService {
 

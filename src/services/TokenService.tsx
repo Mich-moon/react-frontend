@@ -1,24 +1,13 @@
 // TokenService provides get, set, remove methods to work with Token and User Data stored on Browser.
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
+import { StoredUser } from '../types/user.type'
 
-type IUser = {
-    message: string,
-    tokenType: "Bearer",
-    accessToken: string,
-    refreshToken: string,
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string,
-    roles : RoleEnum[],
-}
 
 class TokenService {
 
     // setters
-    setUser(user: IUser) {
+    setUser(user: StoredUser) {
         //console.log(JSON.stringify(user));
         localStorage.setItem("user", JSON.stringify(user));
     }

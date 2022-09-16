@@ -2,12 +2,16 @@ import React from 'react';
 
 import { Routes, Route, Link } from "react-router-dom";
 
-
 import BoardUser from "./board-user.component";
 import BoardModerator from "./board-moderator.component";
 import BoardAdmin from "./board-admin.component";
 
 import AuthService from "../services/AuthService";
+
+
+// types and interfaces
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
 
 
 // styles
@@ -31,21 +35,6 @@ const styles = {
   }
 };
 
-// types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN";
-
-type Role = {
-    id: number,
-    name: RoleEnum
-};
-
-type IUser = {
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string,
-    roles : Role[]
-};
 
 // types for the component props
 type Props =  {};

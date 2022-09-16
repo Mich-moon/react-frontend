@@ -6,10 +6,9 @@ import axiosInstance from './MyAxios';
 import UserService from './UserService';
 import TokenService from './TokenService';
 
+import { RoleEnum } from '../types/role.type'
 
 const API_URL = 'http://localhost:8080/api/auth/';
-
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
 
 class AuthService {
 

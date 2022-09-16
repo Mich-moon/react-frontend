@@ -7,15 +7,9 @@ import UserService from "../services/UserService";
 
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN";
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
 
-type IUser = {
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string,
-    roles : RoleEnum[]
-};
 
 // types for the component props
 type Props = {};
@@ -102,9 +96,9 @@ class Profile extends React.Component<Props, State> {
                         </p>
                         <strong>Authorities:</strong>
                         <ul>
-                            {currentUser != null && currentUser.roles.map((role: RoleEnum, index: number) =>
+                            {currentUser != null && currentUser.roles.map((role: Role, index: number) =>
                                 <li key={index}>
-                                    {role}
+                                    {role.name}
                                 </li>
                             )}
                         </ul>

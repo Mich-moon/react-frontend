@@ -12,35 +12,9 @@ import styles from "../css/alert.module.css";
 
 
 // types and interfaces
-type Role = {
-    /** The unique identifier for the role option */
-    id: number,
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
 
-    /** The name of the role option */
-    name: "ROLE_USER" | "ROLE_ADMIN" | "ROLE_MODERATOR"  // possible user role values
-};
-
-// type for User object
-interface User {
-
-    /** The unique identifier for the user */
-    id: number,
-
-    /** The user's first name */
-    firstName:  string,
-
-    /** The user's last name */
-    lastName: string,
-
-    /** The user's email */
-    email: string,
-
-    /** The user's password */
-    password: string,
-
-    /** The user's role(s) */
-    roles : Role[]
-};
 
 // explicitly define the typings for the componentDidMounts state
 type Props = {};
@@ -48,7 +22,7 @@ type Props = {};
 interface State {
 
     /** A list with elements of type User */
-    users: User[] | null,
+    users: IUser[] | null,
 
     /** Whether flash message should be displayed */
     flash: boolean,

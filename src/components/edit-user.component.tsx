@@ -15,35 +15,8 @@ import styles from "../css/alert.module.css";
 import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
-type Role = {
-
-    /** The unique identifier for the role option */
-    id: number,
-
-    /** The name of the role option */
-    name: "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-};
-
-type IUser = {
-
-    /** The unique identifier for the user */
-    id: number,
-
-    /** The user's email */
-    email: string,
-
-    /** The user's first name */
-    firstName: string,
-
-    /** The user's last name */
-    lastName: string,
-
-    /** The user's password */
-    password: string,
-
-    /** The user's role(s) */
-    roles : Role[]
-};
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
 
 // types for the component props
 interface Params {
@@ -555,7 +528,7 @@ class EditUser extends React.Component<Props, State> {
                                                 <button
                                                   type="button"
                                                   className="btn btn-sm btn-primary admin-action"
-                                                  disabled={!currentUser.roles.includes(role)}
+                                                  disabled={!(currentUser.roles.includes(role))}
                                                   onClick={() => this.addRole(role)}
                                                 >
                                                     Add Role

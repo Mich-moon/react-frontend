@@ -4,14 +4,13 @@
 //import authHeader from './AuthHeader';
 import axiosInstance from './MyAxios';
 
+// types and interfaces
+import { Role } from '../types/role.type'
+
+
 const USERS_REST_API_URL = 'http://localhost:8080/api/users/';
 const TEST_REST_API_URL = 'http://localhost:8080/api/test/';
 
-// types and interfaces
-type Role = {
-    id: number,
-    name: "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-};
 
 class UserService {
 

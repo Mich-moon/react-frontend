@@ -14,25 +14,15 @@ import styles from "../css/alert.module.css";
 
 import { withRouter, WithRouterProps } from './withRouter';
 
+
 // types and interfaces
 import { InvoiceItem } from '../types/invoice.type'
 import { InvoiceData } from '../types/invoice.type'
+import { IStatus } from '../types/invoice.type'
 
-type IStatus = "draft" | "pending" | "approved" | "paid"
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
 
-type Role = {
-    id: number,
-    name: "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-};
-
-type IUser = {
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string,
-    password: string,
-    roles : Role[]
-};
 
 // types for the component props
 interface Params {};
@@ -117,8 +107,16 @@ class Invoices extends React.Component<Props, State> {
                 {/* invoices */}
                 <div>
                 {invoices && invoices.map( (invoice: InvoiceData) =>
+                    <div className="">
+                        <Link to={`/userview/${invoice.id}`} className="btn border border-2 btn-light rounded-2 m-4 py-2">
 
-                    <span> {invoice.id} </span>
+                            <span> {invoice.id} </span>
+                            <span> {invoice.date} </span>
+                            <span> {invoice.createdBy} </span>
+                            <span> {invoice.status} </span>
+
+                        </Link>
+                    </div>
 
                 )}
                 </div>

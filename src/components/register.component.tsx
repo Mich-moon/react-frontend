@@ -7,7 +7,8 @@ import AuthService from "../services/AuthService";
 
 
 // types and interfaces
-type RoleEnum = "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"; // possible user role values
+import { RoleEnum } from '../types/role.type'
+
 
 // types for the component props
 type Props = {};

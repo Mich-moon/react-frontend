@@ -8,19 +8,8 @@ import UserService from "../services/UserService";
 import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
-type Role = {
-    id: number,
-    name: "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-};
-
-type IUser = {
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string,
-    password: string,
-    roles : Role[]
-};
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
 
 // types for the component props
 interface Params {

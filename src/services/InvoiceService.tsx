@@ -5,8 +5,8 @@ import axiosInstance from './MyAxios';
 // types and interfaces
 import { InvoiceItem } from '../types/invoice.type'
 import { Invoice } from '../types/invoice.type'
+import { IStatus } from '../types/invoice.type'
 
-type IStatus = "draft" | "pending" | "approved" | "paid"
 
 const INVOICES_REST_API_URL = 'http://localhost:8080/api/invoices/';
 

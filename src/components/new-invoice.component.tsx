@@ -15,31 +15,15 @@ import styles from "../css/alert.module.css";
 import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
-type Role = {
-    id: number,
-    name: "ROLE_USER" | "ROLE_MODERATOR" | "ROLE_ADMIN"
-};
+import { Role } from '../types/role.type'
+import { IUser } from '../types/user.type'
+import { InvoiceItem } from '../types/invoice.type'
 
-type IUser = {
-    id: number,
-    email: string,
-    firstName: string,
-    lastName: string,
-    password: string,
-    roles : Role[]
-};
 
 // types for the component props
 interface Params {};
 
 type Props = WithRouterProps<Params>;
-
-type InvoiceItem = {
-    description: string,
-    price: string,
-    quantity: string,
-    amount: string
-};
 
 type State = {
     userReady: boolean,
@@ -217,7 +201,12 @@ class CreateInvoice extends React.Component<Props, State> {
                     });
                 }
             );
-            console.log("created by id: "+ createdBy);
+            //console.log("created by id: "+ createdBy);
+
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: ""});
+            }, 5000);
         }
     }
 

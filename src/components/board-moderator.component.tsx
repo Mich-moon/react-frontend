@@ -3,6 +3,7 @@ import React from 'react';
 import { Navigate, useParams, Link } from "react-router-dom";
 
 import ErrorBoundary from './error-page.component';
+import Invoices from './invoice.component';
 
 import UserService from "../services/UserService";
 
@@ -63,21 +64,7 @@ class BoardModerator extends React.Component<Props, State> {
 
                     <hr/>
 
-                    <div className="d-flex justify-content-between">
-                        <div>
-                            <h4> Invoices </h4>
-                        </div>
-                        <div>
-                            <span className="mx-4"> Filter by status </span>
-
-                            <Link to={`/newinvoice`} className="btn btn-sm btn-info admin-action rounded-pill px-4 py-2">
-                                <i className="bi bi-plus-circle-fill text-white align-self-center"></i>
-                                <span className="mx-1"></span>
-                                <span className="align-self-center"> New Invoice </span>
-                            </Link>
-
-                        </div>
-                    </div>
+                    <Invoices/>
 
                 </ErrorBoundary>
             </div>

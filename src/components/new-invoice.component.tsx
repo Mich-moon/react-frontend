@@ -37,7 +37,7 @@ type State = {
     tax: string,
     taxRate: string,
     totalDue: string,
-    lastInvoiceNum: string,
+    invoiceNum: string,
     invoiceDate: string
 };
 
@@ -65,7 +65,7 @@ class CreateInvoice extends React.Component<Props, State> {
             tax: "0.00",
             taxRate: "0.00",
             totalDue: "0.00",
-            lastInvoiceNum: "0000",
+            invoiceNum: "0000",
             invoiceDate: "00-00-0000"
         };
 
@@ -76,6 +76,7 @@ class CreateInvoice extends React.Component<Props, State> {
         this.calculateSubtotal = this.calculateSubtotal.bind(this);
         this.handleItemChange = this.handleItemChange.bind(this);
         this.calculateAmountDue = this.calculateAmountDue.bind(this);
+        this.invoiceStatusToPending = this.invoiceStatusToPending.bind(this);
     }
 
     //  componentDidMount() - lifecycle method to execute code when the
@@ -102,7 +103,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
         // get id number of last invoice in database
         //
-        this.setState({ lastInvoiceNum: "00001" });
+        this.setState({ invoiceNum: "00001" });
 
         // get tax rate
         //
@@ -181,7 +182,8 @@ class CreateInvoice extends React.Component<Props, State> {
                         flash: true,
                         flashMessage: response.data.message,
                         flashType: "success",
-                        loading: false
+                        loading: false,
+                        invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
                     });
                 },
                 error => { // creation not successful
@@ -208,6 +210,59 @@ class CreateInvoice extends React.Component<Props, State> {
                 this.setState({ flash: false, flashMessage: ""});
             }, 5000);
         }
+    }
+
+    invoiceStatusToPending() {
+        // change the invoice's status to invoiceStatusToPending
+
+        const { invoiceNum } = this.state;
+        let id = parseInt(invoiceNum);
+
+        if (!Number.isNaN( id )) {
+
+            InvoiceService.updateInvoiceStatus(id, "pending")
+            .then(
+                response => { // status update successful
+
+                    this.setState({
+                        flash: true,
+                        flashMessage: response.data.message,
+                        flashType: "success",
+                        loading: false
+                    });
+                },
+                error => { // update not successful
+
+                    const resMessage =
+                        (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                        error.message ||
+                        error.toString();
+
+                    this.setState({
+                        flash: true,
+                        flashMessage: resMessage,
+                        flashType: "error",
+                        loading: false
+                    });
+                }
+            );
+
+        } else {
+            this.setState({
+                flash: true,
+                flashMessage: "Oops! something went wrong",
+                flashType: "error",
+                loading: false
+            });
+        }
+
+        // set timer on flash message
+        setTimeout(() => {
+            this.setState({ flash: false, flashMessage: ""});
+        }, 5000);
+
     }
 
     addItem() {
@@ -251,6 +306,7 @@ class CreateInvoice extends React.Component<Props, State> {
     }
 
     calculateSubtotal() {
+        // sum the amounts of all invoice items
 
         const { invoiceItems } = this.state;
         let total = 0.00;
@@ -269,8 +325,6 @@ class CreateInvoice extends React.Component<Props, State> {
     handleItemChange(newList: InvoiceItem[]) {
         // update invoice items maintained in state - for calculation purposes
 
-        //const { invoiceItems } = this.state;
-
         for (let i in newList) {
             try {
                 let item = newList[i];
@@ -278,36 +332,6 @@ class CreateInvoice extends React.Component<Props, State> {
             } catch {}
         }
 
-/*        const newList = invoiceItems.map((item, j) => {
-
-            if (j === index) {
-
-                try {
-                    if (field == "d") { // edit description
-                        item.description = value;
-
-                    } else if (field == "p") { // edit price
-                        if (!Number.isNaN( parseFloat(value) )) {
-                            item.price = value;
-                        }
-
-                    } else if (field == "q") { // edit quantity
-                        if (!Number.isNaN( parseInt(value) )) {
-                            item.quantity = value;
-                        }
-                    }
-
-                    // recalculate amount
-                    item.amount = String( ( parseFloat(item.price) * parseInt(item.quantity) ).toFixed(2) );
-
-                } catch {}
-
-                return item;
-            } else {
-                return item;
-            }
-        });
-*/
         //console.log(newList);
         this.setState({ invoiceItems: newList });
         this.calculateSubtotal(); // recalculate subtotal
@@ -315,6 +339,7 @@ class CreateInvoice extends React.Component<Props, State> {
     }
 
     calculateAmountDue() {
+        // calculate total amount due by adding tax to the subtotal
 
         const { invoiceItems, taxRate } = this.state;
         let total = 0.00;
@@ -326,7 +351,7 @@ class CreateInvoice extends React.Component<Props, State> {
                 total += parseFloat(element.amount);
             });
 
-            console.log(total);
+            //console.log(total);
             tax = total * ( parseFloat(taxRate) );
             total += tax;
             this.setState({totalDue: String( total.toFixed(2) )});
@@ -339,7 +364,7 @@ class CreateInvoice extends React.Component<Props, State> {
     render() {
 
         const { userReady, currentUser, loading, flash, flashMessage, flashType,
-                invoiceItems, subtotal, tax, totalDue, lastInvoiceNum, invoiceDate } = this.state;
+                invoiceItems, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
         const initialValues = {
             companyFrom: "",
@@ -391,7 +416,7 @@ class CreateInvoice extends React.Component<Props, State> {
                               validationSchema={this.validationSchema}
                               onSubmit={this.handleSubmit}  // onSubmit function executes if there are no errors
                             >
-                                {({ values, errors, touched, handleReset }) => (
+                                {({ values, errors, touched, resetForm }) => (
                                     <Form>
                                         <div className="row m-0">
                                             <div className="row m-0 col-12">
@@ -592,7 +617,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                             </thead>
                                                             <tbody>
                                                                 <tr>
-                                                                    <td> {lastInvoiceNum} </td>
+                                                                    <td> {invoiceNum} </td>
                                                                     <td> {invoiceDate} </td>
                                                                 </tr>
                                                             </tbody>
@@ -751,7 +776,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
                                                     <div className="row col-md-6 col-sm-12 flex-fill">
                                                         <button
-                                                          type="button"
+                                                          type="reset"
                                                           id="invoice-discard-btn"
                                                           className="btn btn-sm btn-light rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto me-auto"
                                                         >
@@ -764,7 +789,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                     <div className="row col-md-6 col-sm-12">
 
                                                         <button
-                                                          type="button"
+                                                          type="submit"
                                                           id="invoice-draft-btn"
                                                           className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
                                                         >
@@ -774,8 +799,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         </button>
 
                                                         <button
-                                                          type="submit"
+                                                          type="button"
                                                           id="invoice-save-btn"
+                                                          onClick={() => {this.handleSubmit(values); this.invoiceStatusToPending();}}
                                                           className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
                                                         >
                                                             <i className="bi bi-check-circle align-self-center"></i>

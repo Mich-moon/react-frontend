@@ -51,10 +51,11 @@ class InvoiceService {
     }
 
     updateInvoiceStatus(id: number, status: IStatus) {
-        return axiosInstance.put(INVOICES_REST_API_URL + id + "/update-status", null, { params: {
-            status
-        }}
-
+        return axiosInstance.put(INVOICES_REST_API_URL + id + "/update-status",
+            null,
+            { params: {
+                        status
+            }}
         );
     }
 

@@ -8,8 +8,8 @@ import UserService from "../services/UserService";
 import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
-import { Role } from '../types/role.type'
-import { IUser } from '../types/user.type'
+import { RoleEnum } from '../types/role.type'
+import { StoredUser } from '../types/user.type'
 
 // types for the component props
 interface Params {};
@@ -20,7 +20,7 @@ type Props = WithRouterProps<Params>;
 type State = {
   redirect: string | null,
   userReady: boolean,
-  currentUser: IUser | null
+  currentUser: StoredUser | null
 };
 
 
@@ -47,7 +47,8 @@ class Profile extends React.Component<Props, State> {
         if (currentUser === null) {
             this.setState({ redirect: "/home" });  // store a path to redirect to
         } else {
-            this.setState({ currentUser: currentUser, userReady: true })
+            this.setState({ currentUser: currentUser, userReady: true });
+            console.log(currentUser);
         }
     }
 
@@ -99,9 +100,9 @@ class Profile extends React.Component<Props, State> {
                         </p>
                         <strong>Authorities:</strong>
                         <ul>
-                            {currentUser.roles.map((role: Role, index: number) =>
+                            {currentUser.roles.map((role: RoleEnum, index: number) =>
                                 <li key={index}>
-                                    {role.name}
+                                    {role}
                                 </li>
                             )}
                         </ul>

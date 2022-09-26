@@ -43,8 +43,8 @@ axiosInstance.interceptors.response.use(
             _retry is set to true right after the first time we meet 401 status.
         */
 
-        // if there's an error when url is not for login page
-        if (originalConfig.url !== "http://localhost:8080/api/auth/login" && err.response) {
+        // if there's an error when url is not for login or register pages
+        if (originalConfig.url !== "http://localhost:8080/api/auth/login" && originalConfig.url !== "http://localhost:8080/api/auth/register" && err.response) {
 
             // Access Token has expired and this is first time we meet 401 status
             if (err.response.status === 401 && !originalConfig._retry) {

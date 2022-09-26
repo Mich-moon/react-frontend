@@ -41,7 +41,7 @@ class Register extends React.Component<Props, State> {
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.handleRegister = this.handleRegister.bind(this);
-        this.resetForm = this.resetForm.bind(this);
+        this.login = this.login.bind(this);
 
     }
 
@@ -92,6 +92,7 @@ class Register extends React.Component<Props, State> {
     handleRegister(formValue: { firstname: string; lastname: string; email: string; password: string }) {
 
         // handle data from form submission
+        const { successful } = this.state;
 
         const { firstname, lastname, email, password } = formValue; // get data from form
 
@@ -112,7 +113,9 @@ class Register extends React.Component<Props, State> {
                 this.setState({
                     message: response.data.message,
                     successful: true
-               });
+                });
+
+                this.login(email, password);  // log in user after successful registration
             },
             error => { // validation not ok
                 const resMessage =
@@ -130,8 +133,26 @@ class Register extends React.Component<Props, State> {
         );
     }
 
-    resetForm() {
+    login(email: string, password: string) {
+        // log in user with email and password
+        AuthService.login(email, password).then(
 
+            () => { // validation ok
+                window.location.href="/user";  // redirect page
+            },
+            error => { // validation not ok
+                const resMessage =
+                    (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+
+                this.setState({
+                    message: resMessage
+                });
+            }
+        );
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
@@ -238,8 +259,7 @@ class Register extends React.Component<Props, State> {
 
                                         <button type="submit" className="btn btn-primary btn-block">Register</button>
                                         <button
-                                            type="button"
-                                            onClick={this.resetForm}
+                                            type="reset"
                                             className="btn btn-warning float-right"
                                         >
                                             Reset

@@ -42,8 +42,11 @@ class Login extends React.Component<Props, State> {
 
          // create schema for validation
          return Yup.object().shape({
-             email: Yup.string().required("This field is required!"),
-             password: Yup.string().required("This field is required!"),
+             email: Yup.string()
+                .email("This is not a valid email.")
+                .required("This field is required!"),
+             password: Yup.string()
+                .required("This field is required!"),
         });
      }
 

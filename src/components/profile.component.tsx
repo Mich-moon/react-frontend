@@ -1,18 +1,21 @@
 import React from 'react';
 
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 
+import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
 import { Role } from '../types/role.type'
 import { IUser } from '../types/user.type'
 
+// types for the component props
+interface Params {};
 
 // types for the component props
-type Props = {};
+type Props = WithRouterProps<Params>;
 
 type State = {
   redirect: string | null,
@@ -60,7 +63,7 @@ class Profile extends React.Component<Props, State> {
 
         return (
             <div className="container">
-                {(userReady) ?
+                {(userReady && currentUser != null) ?
                     <div>
                         <header className="jumbotron">
                             <h3>
@@ -79,35 +82,37 @@ class Profile extends React.Component<Props, State> {
 
                         <p>
                             <strong>Id:</strong>{" "}
-                            {(currentUser != null) ? currentUser.id : null}
+                            {currentUser.id}
 
                         </p>
                         <p>
                             <strong>Email:</strong>{" "}
-                            {(currentUser != null) ? currentUser.email : null}
+                            {currentUser.email}
                         </p>
                         <p>
                             <strong>First Name:</strong>{" "}
-                            {(currentUser != null) ? currentUser.firstName : null}
+                            {currentUser.firstName}
                         </p>
                         <p>
                             <strong>Last Name:</strong>{" "}
-                            {(currentUser != null) ? currentUser.lastName : null}
+                            {currentUser.lastName}
                         </p>
                         <strong>Authorities:</strong>
                         <ul>
-                            {currentUser != null && currentUser.roles.map((role: Role, index: number) =>
+                            {currentUser.roles.map((role: Role, index: number) =>
                                 <li key={index}>
                                     {role.name}
                                 </li>
                             )}
                         </ul>
+
+                        <Link to={`/edituser/${currentUser.id}`} className="btn btn-sm btn-info admin-action">Edit My Details</Link>
+
                     </div>
                 : null}
             </div>
         );
     }
-
 }
 
-export default Profile
+export default withRouter(Profile)

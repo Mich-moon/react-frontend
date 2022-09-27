@@ -138,7 +138,7 @@ class Register extends React.Component<Props, State> {
         AuthService.login(email, password).then(
 
             () => { // validation ok
-                window.location.href="/user";  // redirect page
+                window.location.href="/user";  // redirect page and refresh browser
             },
             error => { // validation not ok
                 const resMessage =

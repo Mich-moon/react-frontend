@@ -13,6 +13,7 @@ import Register from "./components/register.component";
 import Home from "./components/home.component";
 import Profile from "./components/profile.component";
 import NotFound from "./components/page-not-found.component";
+import Settings from "./components/settings.component";
 
 import ViewUser from "./components/view-user.component";
 import EditUser from "./components/edit-user.component";
@@ -157,6 +158,7 @@ class App extends React.Component<Props, State> {
                             <Route path="/user" element={ <BoardUser/> } />
                             <Route path="/mod" element={ <BoardModerator/> } />
                             <Route path="/admin" element={ <BoardAdmin/> } />
+                            <Route path="/settings" element={ <Settings/> } />
 
                             <Route path="*" element={ <NotFound/> } />     {/* fallback for unmatched route */}
 

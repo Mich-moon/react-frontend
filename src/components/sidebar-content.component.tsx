@@ -5,6 +5,8 @@ import { Routes, Route, Link } from "react-router-dom";
 import BoardUser from "./board-user.component";
 import BoardModerator from "./board-moderator.component";
 import BoardAdmin from "./board-admin.component";
+import Settings from "./settings.component";
+
 
 import AuthService from "../services/AuthService";
 
@@ -121,6 +123,9 @@ class SidebarContent extends React.Component<Props, State> {
                             <li className="nav-item">
                                 <Link to={"/user"} className="nav-link">
                                     User Board
+                                </Link>
+                                <Link to={"/settings"} className="nav-link">
+                                    Settings
                                 </Link>
                             </li>
                         )}

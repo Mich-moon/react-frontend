@@ -86,6 +86,13 @@ label {
     border-radius: 50%;
 }
 
+.img-page-not-found {
+    width: 50%;
+    height: auto;
+    display: block;
+    margin: auto;
+}
+
 .admin-action {
     margin-right: 10px;
 }

@@ -1,8 +1,13 @@
 import React from 'react';
 
+import { Link } from "react-router-dom";
+
+import { withRouter, WithRouterProps } from './withRouter';
 
 // types for the component props
-type Props = {};
+interface Params {};
+
+type Props = WithRouterProps<Params>;
 
 type State = {
     content: string
@@ -25,13 +30,21 @@ class NotFound extends React.Component <Props, State>{
     render() {
         return (
             <div className="container">
-                <header className="jumbotron">
-                    <h3> Page not found </h3>
-                </header>
+
+                <img
+                  src="https://tepeseo.com/wp-content/uploads/2019/05/404notfound.png"
+                  alt="profile-img"
+                  className="img-page-not-found"
+                />
+
+                <h3> Sorry, we can't find what you're looking for </h3>
+
+                <Link to={`/`} className="btn btn-sm btn-info admin-action mt-4">Go back home</Link>
+
             </div>
         );
     }
 
 }
 
-export default NotFound
+export default withRouter(NotFound)

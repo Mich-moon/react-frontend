@@ -14,7 +14,6 @@ import { StoredUser } from '../types/user.type'
 // types for the component props
 interface Params {};
 
-// types for the component props
 type Props = WithRouterProps<Params>;
 
 type State = {

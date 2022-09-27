@@ -3,7 +3,6 @@ import React from 'react';
 import { Navigate, Link } from "react-router-dom";
 
 import AuthService from "../services/AuthService";
-import UserService from "../services/UserService";
 
 import { withRouter, WithRouterProps } from './withRouter';
 
@@ -17,7 +16,6 @@ interface Params {};
 type Props = WithRouterProps<Params>;
 
 type State = {
-  redirect: string | null,
   userReady: boolean,
   currentUser: StoredUser | null
 };
@@ -31,7 +29,6 @@ class Profile extends React.Component<Props, State> {
         // declare state variables
         super(props);
         this.state = {
-            redirect: null,
             userReady: false,
             currentUser: null
         };
@@ -42,9 +39,10 @@ class Profile extends React.Component<Props, State> {
     componentDidMount() {
 
         const currentUser = AuthService.getCurrentUser();
+        const { navigate } = this.props;  // params injected from HOC wrapper component
 
         if (currentUser === null) {
-            this.setState({ redirect: "/home" });  // store a path to redirect to
+            navigate("/home"); // redirect to home page
         } else {
             this.setState({ currentUser: currentUser, userReady: true });
             console.log(currentUser);
@@ -54,12 +52,7 @@ class Profile extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { redirect, userReady, currentUser } = this.state;
-
-        if (redirect) {
-            return <Navigate to={redirect} />  // redirect page
-
-        }
+        const { userReady, currentUser } = this.state;
 
         return (
             <div className="container">

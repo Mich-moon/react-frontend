@@ -30,6 +30,19 @@ class AuthService {
         });
     }
 
+    mockLogin(email: string, password: string) {
+        // POST {email, password} and return response
+
+        return axios
+        .post(API_URL + "mock-login", {
+            email,
+            password
+        })
+        .then(response => {
+            return response.data;
+        });
+    }
+
     logout() {
          // remove refresh token from database
          let promise =  axiosInstance.post(API_URL + "logout");

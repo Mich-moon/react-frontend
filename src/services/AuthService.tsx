@@ -53,6 +53,11 @@ class AuthService {
          return promise;
     }
 
+    clearLocalStorage() {
+        // remove user information from Local Storage
+        TokenService.removeUser();
+    }
+
     register(firstName: string, lastName: string, email: string, password: string, role: RoleEnum[]) {
         // POST {firstName, lastName, email, password, role}
 

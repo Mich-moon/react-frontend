@@ -12,6 +12,8 @@ import UserService from "../services/UserService";
 
 import styles from "../css/alert.module.css";
 
+import ErrorBoundary from './error-page.component';
+
 import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
@@ -78,7 +80,6 @@ class Settings extends React.Component <Props, State>{
     deleteUser() {
 
         const { currentUser } = this.state;
-        const { navigate } = this.props;  // params injected from HOC wrapper component
 
         this.setState({modal: false}); // close the modal
 
@@ -96,6 +97,8 @@ class Settings extends React.Component <Props, State>{
                         flashType: "success"
                     });
 
+                    AuthService.clearLocalStorage(); // remove user information from Local Storage
+                    window.location.href="/";  // redirect page and refresh browser
                 },
                 error => { // failure
 
@@ -118,10 +121,6 @@ class Settings extends React.Component <Props, State>{
             setTimeout(() => {
                 this.setState({ flash: false, flashMessage: "" });
             }, 5000);
-
-            AuthService.logout(); // remove user information from Local Storage and remove refresh token from database
-            window.location.href="/";  // redirect page and refresh browser
-
         }
     }
 
@@ -133,50 +132,54 @@ class Settings extends React.Component <Props, State>{
         return (
             <div className="container">
 
-                {/* flash message */}
-                <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
-                    <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
-                </Fade>
+                <ErrorBoundary>
 
-                {/* Modal */}
-                <ReactModal
-                   isOpen={modal}
-                   onRequestClose={() => this.setState({modal: false})}
-                   ariaHideApp={false}
-                   style={{content: {width: '400px', height: '150px', inset: '35%'},
-                           overlay: {backgroundColor: 'rgba(44, 44, 45, 0.35)'}
-                         }}
-                >
-                    <div className="my-4"> Are you sure you want to deactivate your account?</div>
+                    {/* flash message */}
+                    <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
+                        <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
+                    </Fade>
+
+                    {/* Modal */}
+                    <ReactModal
+                       isOpen={modal}
+                       onRequestClose={() => this.setState({modal: false})}
+                       ariaHideApp={false}
+                       style={{content: {width: '400px', height: '150px', inset: '35%'},
+                               overlay: {backgroundColor: 'rgba(44, 44, 45, 0.35)'}
+                             }}
+                    >
+                        <div className="my-4"> Are you sure you want to deactivate your account?</div>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger admin-action"
+                          onClick={() => this.deleteUser()}>
+                            <span>Delete</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger admin-action"
+                          onClick={() => this.setState({modal: false})}>
+                            <span>Cancel</span>
+                        </button>
+                    </ReactModal>
+
+
+                    <h3> Settings page </h3>
+
+                    <hr className="pb-2"/>
 
                     <button
                       type="button"
+                      id="delete-user-btn-admin"
                       className="btn btn-sm btn-danger admin-action"
-                      onClick={() => this.deleteUser()}>
-                        <span>Delete</span>
+                      onClick={() => this.setState({modal: true})}
+                    >
+                        <span>Deactivate My Account</span>
                     </button>
 
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-danger admin-action"
-                      onClick={() => this.setState({modal: false})}>
-                        <span>Cancel</span>
-                    </button>
-                </ReactModal>
-
-
-                <h3> Settings page </h3>
-
-                <hr className="pb-2"/>
-
-                <button
-                  type="button"
-                  id="delete-user-btn-admin"
-                  className="btn btn-sm btn-danger admin-action"
-                  onClick={() => this.setState({modal: true})}
-                >
-                    <span>Deactivate My Account</span>
-                </button>
+                </ErrorBoundary>
 
             </div>
         );

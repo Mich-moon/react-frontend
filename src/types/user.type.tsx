@@ -25,7 +25,10 @@ export type IUser = {
     roles : Role[]
 };
 
+
+// user type for api response - AuthService.getCurrentUser()
 export type StoredUser = {
+
     /** message accompanying API response */
     message: string,
 

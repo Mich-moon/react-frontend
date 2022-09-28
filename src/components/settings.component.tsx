@@ -84,7 +84,7 @@ class Settings extends React.Component <Props, State>{
 
         if (currentUser != null) {
 
-            console.log(currentUser.id);
+            //console.log(currentUser.id);
             UserService.deleteUser(currentUser.id).then(
 
                 (response) => { // success
@@ -119,7 +119,7 @@ class Settings extends React.Component <Props, State>{
                 this.setState({ flash: false, flashMessage: "" });
             }, 5000);
 
-            AuthService.logout(); // log out the user - clear local storage and remove refresh token
+            AuthService.logout(); // remove user information from Local Storage and remove refresh token from database
             window.location.href="/";  // redirect page and refresh browser
 
         }

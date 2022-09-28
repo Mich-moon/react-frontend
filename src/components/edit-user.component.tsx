@@ -36,7 +36,9 @@ type State = {
     appRoles: Role[] | null,
 
     /** Whether to show loading circle animation */
-    loading: boolean,
+    loading_bio: boolean,
+    loading_password: boolean,
+    loading_role: boolean,
 
     /** Whether flash message should be displayed */
     flash: boolean,
@@ -45,7 +47,10 @@ type State = {
     flashMessage: string,
 
     /** type of flash message */
-    flashType: Color
+    flashType: Color,
+
+    /** for storing result of re-login after updates*/
+    login_state: boolean
 
 };
 
@@ -61,17 +66,22 @@ class EditUser extends React.Component<Props, State> {
             userReady: false,
             currentUser: null,
             appRoles: null,
-            loading: false,
+            loading_bio: false,
+            loading_password: false,
+            loading_role: false,
             flash: false,
             flashMessage: "",
-            flashType: "info"
+            flashType: "info",
+            login_state: false
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
+            this.getUser = this.getUser.bind(this);
             this.handleBioEdit = this.handleBioEdit.bind(this);
             this.handlePasswordEdit = this.handlePasswordEdit.bind(this);
             this.addRole = this.addRole.bind(this);
             this.removeRole = this.removeRole.bind(this);
+            this.login = this.login.bind(this);
 
     }
 
@@ -96,6 +106,22 @@ class EditUser extends React.Component<Props, State> {
             //console.log(response.data.roles);
         });
 
+    }
+
+    getUser() {
+        // get user details from database
+
+        const { match, navigate } = this.props;  // params injected from HOC wrapper component
+        const userID = parseInt(match.params.userID);
+
+        UserService.getUser(userID).then((response) => {
+
+            this.setState({ currentUser: response.data.user, userReady: true })
+            console.log("component user updated");
+
+        }).catch((error) => {
+            navigate("/home"); // redirect to home page
+        });
     }
 
     validationSchemaBio() {
@@ -126,6 +152,8 @@ class EditUser extends React.Component<Props, State> {
                 .required("This field is required!"),
             email: Yup.string()
                 .email("This is not a valid email.")
+                .required("This field is required!"),
+            bio_password: Yup.string()
                 .required("This field is required!"),
         });
     }
@@ -162,26 +190,36 @@ class EditUser extends React.Component<Props, State> {
         });
     }
 
-    handleBioEdit(formValue: { id: number; firstname: string; lastname: string; email: string; }) {
+    handleBioEdit(formValue: { id: number; firstname: string; lastname: string; email: string; bio_password:string }) {
 
-        // handle data from form submission
-        const { id, firstname, lastname, email } = formValue; // get data from form
+        // handle data from bio form submission
+        const { id, firstname, lastname, email, bio_password } = formValue; // get data from form
 
         const { currentUser } = this.state;
 
         if (currentUser != null) {
             this.setState({
-                loading: true
+                loading_bio: true // start loading button animation
             });
 
-            this.updateUser(
-                id,
-                firstname,
-                lastname,
-                email,
-                currentUser.password,
-                currentUser.roles
-            );
+            console.log("hmmm" + this.login(currentUser.email, bio_password));
+            if (this.login(currentUser.email, bio_password)) { // re-login successful
+
+                console.log("about to update");
+
+                this.updateUser(
+                    id,
+                    firstname,
+                    lastname,
+                    email,
+                    bio_password,
+                    currentUser.roles
+                );
+            }
+
+            this.setState({
+                loading_bio: false // stop loading button animation
+            });
         }
 
     }
@@ -196,49 +234,29 @@ class EditUser extends React.Component<Props, State> {
         if (currentUser != null) {
 
             this.setState({
-                loading: true // start loading button animation
+                loading_password: true // start loading button animation
             });
 
-            // log in user with email and password
-            AuthService.login(email, password).then(
-                () => { // validation ok
+            if (this.login(email, password)) { // re-login successful
+                console.log("updating");
 
-                    this.updateUser(
-                        currentUser.id,
-                        currentUser.firstName,
-                        currentUser.lastName,
-                        email,
-                        newPassword,
-                        currentUser.roles
-                    );
+                this.updateUser(
+                    currentUser.id,
+                    currentUser.firstName,
+                    currentUser.lastName,
+                    email,
+                    newPassword,
+                    currentUser.roles
+                );
+            }
 
-                },
-                error => { // validation not ok
-                    const resMessage =
-                        (error.response &&
-                        error.response.data &&
-                        error.response.data.message) ||
-                        error.message ||
-                        error.toString();
-
-                    this.setState({
-                        flash: true,
-                        flashMessage: resMessage,
-                        flashType: "error",
-                        loading: false
-                    });
-
-                    // set timer on flash message
-                    setTimeout(() => {
-                        this.setState({ flash: false, flashMessage: "" });
-                    }, 5000);
-                }
-            );
+            this.setState({
+                loading_password: false // stop loading button animation
+            });
         }
     }
 
     updateUser(id: number, firstName: string, lastName: string, email: string, password: string, roles: Role[]) {
-
 
         UserService.updateUser(
             id,
@@ -250,12 +268,17 @@ class EditUser extends React.Component<Props, State> {
         ).then(
             response => { // update successful
 
+                console.log("user updated. now fetching");
+                this.getUser();
+
                 this.setState({
                     flash: true,
                     flashMessage: response.data.message,
-                    flashType: "success",
-                    loading: false
+                    flashType: "success"
                 });
+
+                this.login(email, password);  // log in user to continue their session
+
             },
             error => { // update not successful
                 const resMessage =
@@ -268,8 +291,7 @@ class EditUser extends React.Component<Props, State> {
                 this.setState({
                     flash: true,
                     flashMessage: resMessage,
-                    flashType: "error",
-                    loading: false
+                    flashType: "error"
                 });
             }
         );
@@ -280,12 +302,44 @@ class EditUser extends React.Component<Props, State> {
         }, 5000);
     }
 
+    login = (email: string, password: string): boolean => {
+        // log in user with email and password
+
+        const { login_state } = this.state;
+        this.setState({ login_state: false});
+
+        AuthService.login(email, password)
+        .then(
+
+            () => { // validation ok
+                //console.log("re-login success");
+                this.setState({ login_state: true});
+            },
+            error => { // validation not ok
+
+                const resMessage =
+                    (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+
+                console.log(resMessage);
+                AuthService.logout();
+                window.location.href="/";  // redirect page
+            }
+        );
+
+        console.log( "returning " + login_state );
+        return login_state;
+    }
+
     removeRole(role: Role) {
 
         const { currentUser } = this.state;
         if (currentUser != null) {
             this.setState({
-                loading: true
+                loading_role: true
             });
 
             this.updateUser(
@@ -307,7 +361,8 @@ class EditUser extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { userReady, currentUser, appRoles, loading, flash, flashMessage, flashType } = this.state;
+        const { userReady, currentUser, appRoles, loading_bio, loading_password,
+                loading_role, flash, flashMessage, flashType } = this.state;
         const { match } = this.props;  // props injected from HOC wrapper component
 
         const currentID = currentUser === null ? 0 : currentUser.id;
@@ -320,7 +375,8 @@ class EditUser extends React.Component<Props, State> {
             id: currentID,
             firstname: currentFirstname,
             lastname: currentLastname,
-            email: currentEmail
+            email: currentEmail,
+            bio_password: "",
         };
 
         const initialValuesPassword = {
@@ -420,12 +476,20 @@ class EditUser extends React.Component<Props, State> {
                                                   className="alert alert-danger"
                                                 />
                                             </div>
+                                            <div className="form-group pb-1">
+                                                <Field name="bio_password" type="text" className="form-control" placeholder="Password"/>
+                                                <ErrorMessage
+                                                  name="bio_password"
+                                                  component="div"
+                                                  className="alert alert-danger"
+                                                />
+                                            </div>
                                         </div>
 
-                                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                                        <button type="submit" className="btn btn-primary" disabled={loading_bio}>
 
                                             {/* loading animation */}
-                                            {loading ? (
+                                            {loading_bio ? (
                                                 <span>
                                                     <span className="spinner-grow spinner-grow-sm mr-4"></span>
                                                     Loading..
@@ -485,10 +549,10 @@ class EditUser extends React.Component<Props, State> {
                                         />
                                     </div>
 
-                                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                                    <button type="submit" className="btn btn-primary" disabled={loading_password}>
 
                                         {/* loading animation */}
-                                        {loading ? (
+                                        {loading_password ? (
                                             <span>
                                                 <span className="spinner-grow spinner-grow-sm mr-4"></span>
                                                 Loading..
@@ -507,7 +571,7 @@ class EditUser extends React.Component<Props, State> {
                         {/* Edit User Roles */}
                         <h4 className="mb-4"> User Roles </h4>
 
-                        {( appRoles && currentUser != null /* && currentUser.roles.includes(appRoles[0]) */ ) ? (
+                        {( appRoles && currentUser != null && currentUser.roles.includes(appRoles[0]) ) ? (
                         <div>
                             <table className = "table table-striped">
                                 <thead>

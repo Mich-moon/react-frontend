@@ -31,12 +31,13 @@ class AuthService {
     }
 
     logout() {
+         // remove refresh token from database
+         let promise =  axiosInstance.post(API_URL + "logout");
 
          // remove user information from Local Storage
          TokenService.removeUser();
 
-         // remove refresh token from database
-         return axiosInstance.post(API_URL + "logout");
+         return promise;
     }
 
     register(firstName: string, lastName: string, email: string, password: string, role: RoleEnum[]) {

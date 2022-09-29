@@ -255,13 +255,13 @@ class Register extends React.Component<Props, State> {
                                         />
                                     </div>
 
-                                    <div className="form-group">
+                                    <div className="form-group mt-4">
 
-                                        <button type="submit" className="btn btn-primary btn-block">Register</button>
-                                        <button
-                                            type="reset"
-                                            className="btn btn-warning float-right"
-                                        >
+                                        <button type="submit" className="btn btn-primary btn-block">
+                                            Register
+                                        </button>
+                                        <span className="mx-4"></span>
+                                        <button type="reset" className="btn btn-warning">
                                             Reset
                                         </button>
 

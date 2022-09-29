@@ -3,6 +3,8 @@ import React from 'react';
 import { Navigate, useParams, Link } from "react-router-dom";
 
 import ErrorBoundary from './error-page.component';
+import InvoiceCards from './invoice-cards.component';
+
 import Invoices from './invoice.component';
 
 import UserService from "../services/UserService";
@@ -58,11 +60,14 @@ class BoardModerator extends React.Component<Props, State> {
         return (
             <div className="container">
                 <ErrorBoundary>
-                    <header className="jumbotron">
-                        <h3>{this.state.content}</h3>
+                    <header className="jumbotron bg-dark text-light py-4">
+                        <h3>Moderator Board</h3>
+                        <span className="fst-italic">{this.state.content}</span>
                     </header>
 
                     <hr/>
+
+                    <InvoiceCards/>
 
                     <Invoices/>
 

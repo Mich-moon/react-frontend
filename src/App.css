@@ -10,6 +10,10 @@
     pointer-events: none;
 }
 
+body {
+    background-color: #f7f7f7;
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .App-logo {
         animation: App-logo-spin infinite 20s linear;
@@ -40,10 +44,12 @@
     }
 }
 
-.sidebar {
-    text-align: left;
-    padding: 0 0 0 5vh;
+label {
+    display: block;
+    margin-top: 10px;
 }
+
+/* ... */
 .hide {
     display: none;
 }
@@ -51,24 +57,41 @@
 .relative {
     position: relative;
 }
+
+.list-no-style {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navigation */
+.sidebar {
+    text-align: left;
+    padding: 0 0 0 5vh;
+}
+
+.sidebar-toggle {
+    background-color: #c0c0c0cc;
+    border-color: #c0c0c0cc;
+    display: flex;
+    justify-self: left;
+    margin: 20px;
+}
 .navbar-expand {
     flex-wrap: nowrap;
     justify-content: space-between;
 }
 
-label {
-    display: block;
-    margin-top: 10px;
-}
+/* layout */
+
 .card-container.card {
     max-width: 350px !important;
     padding: 40px 40px;
 }
 .card {
-    background-color: #f7f7f7;
     padding: 20px 25px 30px;
     margin: 0 auto 25px;
-    margin-top: 50px;
+    margin-top: 0px;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
@@ -76,6 +99,9 @@ label {
     -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
     box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
 }
+
+
+/* */
 .profile-img-card {
     width: 96px;
     height: 96px;
@@ -93,19 +119,26 @@ label {
     margin: auto;
 }
 
-.admin-action {
+.custom-mr-10 {
     margin-right: 10px;
 }
 
-.sidebar-toggle {
-    background-color: #c0c0c0cc;
-    border-color: #c0c0c0cc;
-    display: flex;
-    justify-self: left;
-    margin: 20px;
-}
-/* ... */
-
 .invoice-logo {
     height: 4rem;
+}
+
+.bg-draft {
+    background-image: linear-gradient( to bottom right, rgba(153, 153, 153, 1), rgba(222, 234, 236, 1) );
+}
+
+.bg-pending {
+    background-image: linear-gradient( to bottom right, rgba(21, 200, 227, 1), rgba(132, 252, 255, 1) );
+}
+
+.bg-approved {
+    background-image: linear-gradient( to bottom right, rgba(12, 111, 230, 1), rgba(32, 220, 249, 1) );
+}
+
+.bg-paid {
+    background-image: linear-gradient( to bottom right, rgba(6, 171, 79, 1), rgba(29, 250, 127, 1) );
 }

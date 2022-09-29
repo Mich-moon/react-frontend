@@ -50,7 +50,7 @@ class ViewUser extends React.Component<Props, State> {
             //console.log(response.data.user);
 
         }).catch((error) => {
-            navigate("/home"); // redirect to home page
+            navigate("*"); // redirect to not found page
         });
     }
 
@@ -61,7 +61,7 @@ class ViewUser extends React.Component<Props, State> {
         const { match } = this.props;  // props injected from HOC wrapper component
 
         return (
-            <div className="container">
+            <div className="container mb-4">
                 {(userReady && currentUser != null) ?
                     <div>
                         <header className="jumbotron">
@@ -70,42 +70,102 @@ class ViewUser extends React.Component<Props, State> {
                             </h3>
                         </header>
 
-                        <img
-                          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-                          alt="profile-img"
-                          className="profile-img-card my-4"
-                        />
-
                         <hr className="pb-2"/>
 
-                        <p>
-                            <strong>Id:</strong>{" "}
-                            {currentUser.id}
+                        <div className="row">
 
-                        </p>
-                        <p>
-                            <strong>Email:</strong>{" "}
-                            {currentUser.email}
-                        </p>
-                        <p>
-                            <strong>First Name:</strong>{" "}
-                            {currentUser.firstName}
-                        </p>
-                        <p>
-                            <strong>Last Name:</strong>{" "}
-                            {currentUser.lastName}
-                        </p>
-                        <strong>Authorities:</strong>
-                        <ul>
-                            {currentUser.roles.map((role: Role, index: number) =>
-                                <li key={index}>
-                                    {role.name}
-                                </li>
-                            )}
-                        </ul>
+                            {/* picture box */}
+                            <div className="card col-md-5 col-sm-12 mb-auto">
 
-                        <Link to={`/edituser/${currentUser.id}`} className="btn btn-sm btn-info admin-action">Edit</Link>
+                                <img
+                                  src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+                                  alt="profile-img"
+                                  className="profile-img-card my-4"
+                                />
 
+                                <p>
+                                    <strong>Id:</strong>{" "}
+                                    {currentUser.id}
+
+                                </p>
+                                <p>
+                                    <strong>Email:</strong>{" "}
+                                    {currentUser.email}
+                                </p>
+                                <p>
+                                    <strong>First Name:</strong>{" "}
+                                    {currentUser.firstName}
+                                </p>
+                                <p>
+                                    <strong>Last Name:</strong>{" "}
+                                    {currentUser.lastName}
+                                </p>
+
+                                <Link to={`/edituser/${currentUser.id}`} className="btn btn-sm btn-info rounded-pill p-2 px-4 mx-auto">Edit User Details</Link>
+
+                            </div>
+
+                            <div className="col-md-6 col-sm-12">
+
+                                <div className="card">
+                                    <div className="card-header mb-4">
+                                        <strong> My Authorities</strong>
+                                    </div>
+
+                                    <ul className="list-no-style">
+                                        {currentUser.roles.map((role: Role, index: number) =>
+                                            <li key={index}>
+                                                <i className="bi bi-exclamation-circle-fill"></i>
+                                                <span className="mx-2"></span>
+                                                {role.name}
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+
+                                <div className="card">
+                                    <div className="card-header mb-4">
+                                        <strong> My Invoices </strong>
+                                    </div>
+
+                                    <div className="d-flex flex-column">
+                                        <div className="d-flex justify-content-between px-2 mb-3">
+                                            <span className="bg-draft rounded-pill p-1 px-4">
+                                                Drafts
+                                            </span>
+                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                                #
+                                            </span>
+                                        </div>
+                                        <div className="d-flex justify-content-between px-2 mb-3">
+                                            <span className="bg-pending rounded-pill p-1 px-4">
+                                                Pending
+                                            </span>
+                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                                #
+                                            </span>
+                                        </div>
+                                        <div className="d-flex justify-content-between px-2 mb-3">
+                                            <span className="bg-approved rounded-pill p-1 px-4">
+                                                Approved
+                                            </span>
+                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                                #
+                                            </span>
+                                        </div>
+                                        <div className="d-flex justify-content-between px-2 mb-3">
+                                            <span className="bg-paid rounded-pill p-1 px-4">
+                                                Paid
+                                            </span>
+                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                                #
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
                     </div>
                 : null}
             </div>

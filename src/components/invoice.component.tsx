@@ -62,11 +62,32 @@ class Invoices extends React.Component<Props, State> {
         const currentUser = AuthService.getCurrentUser();
         if (currentUser !== null) {
             this.setState({ currentUser: currentUser });
+        } else {
+            navigate("/home"); // redirect to home page
         }
 
         InvoiceService.getInvoices().then((response) => {
             this.setState({ invoices: response.data.invoices });
             console.log(response.data.invoices)
+
+        }).catch((error) => {
+            const resMessage =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+
+            this.setState({
+                flash: true,
+                flashMessage: resMessage,
+                flashType: "error"
+            });
+
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: "" });
+            }, 5000);
         });
     }
 
@@ -84,41 +105,50 @@ class Invoices extends React.Component<Props, State> {
                     <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
                 </Fade>
 
-                {/* top panel */}
-                <div className="d-flex justify-content-between">
+                <div className="card">
 
+                    {/* top panel */}
+                    <div className="d-flex justify-content-between">
+
+                        <div>
+                            <h4> Invoices </h4>
+                        </div>
+
+                        <div>
+                            <span className="mx-4"> Filter by status </span>
+
+                            <Link to={`/newinvoice`} className="btn btn-sm btn-info admin-action rounded-pill px-4 py-2">
+                                <i className="bi bi-plus-circle-fill text-white align-self-center"></i>
+                                <span className="mx-1"></span>
+                                <span className="align-self-center"> New Invoice </span>
+                            </Link>
+
+                        </div>
+
+                    </div>
+
+                    {/* invoices */}
                     <div>
-                        <h4> Invoices </h4>
+
+                    {(invoices != null) ?
+                        <div>
+                            {invoices.map( (invoice: InvoiceData) =>
+                                <div className="">
+                                    <Link to={`/userview/${invoice.id}`} className="btn border border-2 btn-light rounded-2 m-4 py-2">
+
+                                        <span> {invoice.id} </span>
+                                        <span> {invoice.date} </span>
+                                        <span> {invoice.createdBy} </span>
+                                        <span> {invoice.status} </span>
+
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    :
+                       <p className="mt-4 fst-italic text-warning"> No invoices found </p>
+                    }
                     </div>
-
-                    <div>
-                        <span className="mx-4"> Filter by status </span>
-
-                        <Link to={`/newinvoice`} className="btn btn-sm btn-info admin-action rounded-pill px-4 py-2">
-                            <i className="bi bi-plus-circle-fill text-white align-self-center"></i>
-                            <span className="mx-1"></span>
-                            <span className="align-self-center"> New Invoice </span>
-                        </Link>
-
-                    </div>
-
-                </div>
-
-                {/* invoices */}
-                <div>
-                {invoices && invoices.map( (invoice: InvoiceData) =>
-                    <div className="">
-                        <Link to={`/userview/${invoice.id}`} className="btn border border-2 btn-light rounded-2 m-4 py-2">
-
-                            <span> {invoice.id} </span>
-                            <span> {invoice.date} </span>
-                            <span> {invoice.createdBy} </span>
-                            <span> {invoice.status} </span>
-
-                        </Link>
-                    </div>
-
-                )}
                 </div>
             </div>
 

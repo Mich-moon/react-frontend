@@ -1,6 +1,8 @@
 import React from 'react';
 
 import ErrorBoundary from './error-page.component';
+import InvoiceCards from './invoice-cards.component';
+
 import UserService from "../services/UserService";
 
 
@@ -50,9 +52,15 @@ class BoardUser extends React.Component<Props, State> {
         return (
             <div className="container">
                 <ErrorBoundary>
-                    <header className="jumbotron">
-                        <h3>{this.state.content}</h3>
+                    <header className="jumbotron bg-dark text-light py-4">
+                        <h3>User Board</h3>
+                        <span className="fst-italic">{this.state.content}</span>
                     </header>
+
+                    <hr/>
+
+                    <InvoiceCards/>
+
                 </ErrorBoundary>
 
             </div>

@@ -10,6 +10,8 @@ import ReactModal from 'react-modal';  // for modal
 import UserService from '../services/UserService';
 import styles from "../css/alert.module.css";
 
+import { withRouter, WithRouterProps } from './withRouter';
+
 
 // types and interfaces
 import { Role } from '../types/role.type'
@@ -17,7 +19,9 @@ import { IUser } from '../types/user.type'
 
 
 // explicitly define the typings for the componentDidMounts state
-type Props = {};
+interface Params {};
+
+type Props = WithRouterProps<Params>;
 
 interface State {
 
@@ -69,6 +73,28 @@ class Users extends React.Component<Props, State> {
          UserService.getUsers().then((response) => {
              this.setState({ users: response.data.users });
              //console.log(response.data.users)
+
+         }).catch((error) => {
+
+             const resMessage =
+                 (error.response &&
+                 error.response.data &&
+                 error.response.data.message) ||
+                 error.message ||
+                 error.toString();
+
+             this.setState({
+                 flash: true,
+                 flashMessage: resMessage,
+                 flashType: "error",
+                 deleteID: null
+            });
+
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: "" });
+            }, 5000);
+
          });
      }
 
@@ -78,6 +104,26 @@ class Users extends React.Component<Props, State> {
 
         UserService.getUsers().then((response) => {
             this.setState({ users: response.data.users });
+        }).catch((error) => {
+
+            const resMessage =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+
+            this.setState({
+                flash: true,
+                flashMessage: resMessage,
+                flashType: "error",
+                deleteID: null
+            });
+
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: "" });
+            }, 5000);
         });
     }
 
@@ -158,69 +204,72 @@ class Users extends React.Component<Props, State> {
 
                      <button
                       type="button"
-                      className="btn btn-sm btn-danger admin-action"
+                      className="btn btn-sm btn-danger custom-mr-10"
                       onClick={() => this.deleteUser()}>
                           <span>Delete</span>
                      </button>
 
                      <button
                       type="button"
-                      className="btn btn-sm btn-danger admin-action"
+                      className="btn btn-sm btn-danger custom-mr-10"
                       onClick={() => this.setState({modal: false})}>
                           <span>Cancel</span>
                      </button>
                  </ReactModal>
 
+                 <div className="card">
+                     <h4 className="text-center"> Users List</h4>
 
-                 <h4 className = "text-center"> Users List</h4>
+                     <div className="table-responsive-xxl">
+                         <table className="table table-hover caption-top w-100 mt-4">
+                             <caption>List of users</caption>
 
-                 <table className = "table table-striped">
-                     <thead>
-                         <tr>
-
-                             <td> User Id </td>
-                             <td> User First Name </td>
-                             <td> User Last Name </td>
-                             <td> User Email </td>
-                             <td> Actions </td>
-
-                         </tr>
-
-                     </thead>
-
-                     {(users != null) ?
-                         <tbody>
-                             {users.map(
-                                 user =>
-                                 <tr key = {user.id}>
-                                     <td> {user.id}</td>
-                                     <td> {user.firstName}</td>
-                                     <td> {user.lastName}</td>
-                                     <td> {user.email}</td>
-                                     <td>
-                                     <button
-                                       type="button"
-                                       id="delete-user-btn-admin"
-                                       className="btn btn-sm btn-danger admin-action"
-                                       onClick={() => this.handleOpenDeleteModal(user.id)}
-                                     >
-                                              <span>Delete</span>
-                                     </button>
-
-                                     <Link to={`/userview/${user.id}`} className="btn btn-sm btn-info admin-action">View More</Link>
-                                     </td>
-
+                             <thead className="table-light">
+                                 <tr>
+                                     <th className="text-start" scope="col"> Id </th>
+                                     <th className="text-start" scope="col"> First Name </th>
+                                     <th className="text-start" scope="col"> Last Name </th>
+                                     <th className="text-start" scope="col"> Email </th>
+                                     <th className="text-start" scope="col"> Actions </th>
                                  </tr>
-                             )}
-                         </tbody>
-                     : null}
+                             </thead>
 
-                 </table>
+                             {(users != null) ?
+                                 <tbody>
+                                     {users.map(user =>
 
+                                         <tr key = {user.id}>
+                                             <th className="text-start" scope="row"> {user.id}</th>
+                                             <td className="text-start"> {user.firstName}</td>
+                                             <td className="text-start"> {user.lastName}</td>
+                                             <td className="text-start"> {user.email}</td>
+                                             <td>
+                                                 <button
+                                                   type="button"
+                                                   id="delete-user-btn-admin"
+                                                   className="btn btn-sm btn-danger custom-mr-10"
+                                                   onClick={() => this.handleOpenDeleteModal(user.id)}
+                                                 >
+                                                          <span>Delete</span>
+                                                 </button>
+
+                                                 <Link to={`/userview/${user.id}`} className="btn btn-sm btn-info custom-mr-10">View</Link>
+                                             </td>
+
+                                         </tr>
+                                     )}
+                                 </tbody>
+                             :
+                                <p className="mt-4 fst-italic text-warning"> No users found </p>
+                             }
+
+                         </table>
+                    </div>
+                 </div>
              </div>
 
          )
      }
 }
 
-export default Users
+export default withRouter(Users)

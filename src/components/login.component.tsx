@@ -125,7 +125,7 @@ class Login extends React.Component<Props, State> {
                                   />
                               </div>
                               <div className="form-group">
-                                  <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                                  <button type="submit" className="btn btn-primary btn-block mt-4" disabled={loading}>
 
                                       {/* loading circle animation */}
                                       {loading && (

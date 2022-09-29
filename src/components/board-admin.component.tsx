@@ -52,8 +52,9 @@ class BoardAdmin extends React.Component<Props, State> {
         return (
             <div className="container">
                 <ErrorBoundary>
-                    <header className="jumbotron">
-                        <h3>{this.state.content}</h3>
+                    <header className="jumbotron bg-dark text-light py-4">
+                        <h3>Admin Board</h3>
+                        <span className="fst-italic">{this.state.content}</span>
                     </header>
 
                     <hr/>

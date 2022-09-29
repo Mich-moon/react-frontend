@@ -130,8 +130,7 @@ class Settings extends React.Component <Props, State>{
         const { currentUser, flash, flashMessage, flashType, modal } = this.state;
 
         return (
-            <div className="container">
-
+            <div className="container mb-4">
                 <ErrorBoundary>
 
                     {/* flash message */}
@@ -152,35 +151,39 @@ class Settings extends React.Component <Props, State>{
 
                         <button
                           type="button"
-                          className="btn btn-sm btn-danger admin-action"
+                          className="btn btn-sm btn-danger custom-mr-10"
                           onClick={() => this.deleteUser()}>
                             <span>Delete</span>
                         </button>
 
                         <button
                           type="button"
-                          className="btn btn-sm btn-danger admin-action"
+                          className="btn btn-sm btn-danger custom-mr-10"
                           onClick={() => this.setState({modal: false})}>
                             <span>Cancel</span>
                         </button>
                     </ReactModal>
 
+                    {(currentUser != null) ?
+                        <div>
+                            <header className="jumbotron bg-dark text-light py-4">
+                                <h3> Settings page </h3>
+                            </header>
 
-                    <h3> Settings page </h3>
 
-                    <hr className="pb-2"/>
+                            <hr className="pb-2"/>
 
-                    <button
-                      type="button"
-                      id="delete-user-btn-admin"
-                      className="btn btn-sm btn-danger admin-action"
-                      onClick={() => this.setState({modal: true})}
-                    >
-                        <span>Deactivate My Account</span>
-                    </button>
-
+                            <button
+                              type="button"
+                              id="delete-user-btn-admin"
+                              className="btn btn-sm btn-danger admin-action"
+                              onClick={() => this.setState({modal: true})}
+                            >
+                                <span>Deactivate My Account</span>
+                            </button>
+                        </div>
+                    : null}
                 </ErrorBoundary>
-
             </div>
         );
     }

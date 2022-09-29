@@ -399,7 +399,7 @@ class CreateInvoice extends React.Component<Props, State> {
                  </Fade>
 
                 {(userReady && currentUser != null) ?
-                    <div>
+                    <div className="card">
                         <header className="jumbotron d-flex justify-content-between align-items-center mx-4">
                             <img
                               src="https://4m4you.com/wp-content/uploads/2020/06/logo-placeholder-300x120.png"
@@ -606,7 +606,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
                                                 </div>
 
-                                                <div className = "col-md-6 col-sm-12">
+                                                <div className = "col-md-6 col-sm-12 px-0 ">
                                                     <div className="border border-2 rounded-2 mx-2">
                                                         <table className="table table-bordered-dark mb-0">
                                                             <thead className="table-light">
@@ -627,10 +627,10 @@ class CreateInvoice extends React.Component<Props, State> {
 
 
                                                 <FieldArray
-                                                  name="formInvoiceItems"
-                                                  render={ ({ remove, push }) => (
+                                                    name="formInvoiceItems"
+                                                    render={ ({ remove, push }) => (
 
-                                                    <div>
+                                                    <div className="px-0">
 
                                                         {/* Items */}
                                                         <div className = "row mx-0 px-0 gx-1 col-md-12">
@@ -778,7 +778,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         <button
                                                           type="reset"
                                                           id="invoice-discard-btn"
-                                                          className="btn btn-sm btn-light rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto me-auto"
+                                                          className="btn btn-sm btn-outline-danger rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto me-auto"
                                                         >
                                                             <i className="bi bi-x-circle align-self-center"></i>
                                                             <span className="mx-1"></span>

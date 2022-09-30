@@ -133,6 +133,12 @@ class Settings extends React.Component <Props, State>{
             <div className="container mb-4">
                 <ErrorBoundary>
 
+                    <header className="jumbotron bg-dark text-light py-4">
+                        <h3> Settings page </h3>
+                    </header>
+
+                    <hr className="pb-2"/>
+
                     {/* flash message */}
                     <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
                         <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
@@ -165,13 +171,7 @@ class Settings extends React.Component <Props, State>{
                     </ReactModal>
 
                     {(currentUser != null) ?
-                        <div>
-                            <header className="jumbotron bg-dark text-light py-4">
-                                <h3> Settings page </h3>
-                            </header>
-
-
-                            <hr className="pb-2"/>
+                        <div className="">
 
                             <button
                               type="button"

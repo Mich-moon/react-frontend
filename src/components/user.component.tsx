@@ -32,7 +32,7 @@ interface State {
     flash: boolean,
 
     /** Message to be flashed */
-    flashMessage: string, // message to be flashed
+    flashMessage: string,
 
     /** type of flash message */
     flashType: Color,
@@ -61,8 +61,9 @@ class Users extends React.Component<Props, State> {
          };
 
          // bind methods so that they are accessible from the state inside of the render() method.
-        this.deleteUser = this.deleteUser.bind(this);
-        this.handleOpenDeleteModal = this.handleOpenDeleteModal.bind(this);
+         this.getUsers = this.getUsers.bind(this);
+         this.deleteUser = this.deleteUser.bind(this);
+         this.handleOpenDeleteModal = this.handleOpenDeleteModal.bind(this);
 
      }
 
@@ -101,6 +102,10 @@ class Users extends React.Component<Props, State> {
     //  componentDidUpdate() - lifecycle method to execute code after the
     //      component is updated in the DOM (Document Object Model).
     componentDidUpdate() {
+        this.getUsers();
+    }
+
+    getUsers() {
 
         UserService.getUsers().then((response) => {
             this.setState({ users: response.data.users });
@@ -205,20 +210,22 @@ class Users extends React.Component<Props, State> {
                      <button
                       type="button"
                       className="btn btn-sm btn-danger custom-mr-10"
-                      onClick={() => this.deleteUser()}>
-                          <span>Delete</span>
+                      onClick={() => this.deleteUser()}
+                     >
+                        <span>Delete</span>
                      </button>
 
                      <button
                       type="button"
                       className="btn btn-sm btn-danger custom-mr-10"
-                      onClick={() => this.setState({modal: false})}>
-                          <span>Cancel</span>
+                      onClick={() => this.setState({modal: false})}
+                     >
+                        <span>Cancel</span>
                      </button>
                  </ReactModal>
 
                  <div className="card">
-                     <h4 className="text-center"> Users List</h4>
+                     <h4 className="text-center"> Users </h4>
 
                      <div className="table-responsive-xxl">
                          <table className="table table-hover caption-top w-100 mt-4">
@@ -246,11 +253,11 @@ class Users extends React.Component<Props, State> {
                                              <td>
                                                  <button
                                                    type="button"
-                                                   id="delete-user-btn-admin"
+                                                   id={`delete-user-btn-${user.id}`}
                                                    className="btn btn-sm btn-danger custom-mr-10"
                                                    onClick={() => this.handleOpenDeleteModal(user.id)}
                                                  >
-                                                          <span>Delete</span>
+                                                     <span>Delete</span>
                                                  </button>
 
                                                  <Link to={`/userview/${user.id}`} className="btn btn-sm btn-info custom-mr-10">View</Link>

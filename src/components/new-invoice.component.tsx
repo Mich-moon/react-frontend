@@ -38,7 +38,10 @@ type State = {
     taxRate: string,
     totalDue: string,
     invoiceNum: string,
-    invoiceDate: string
+    invoiceDate: string,
+
+    /* Indicates whether invoice data should be saved as pending (not a draft) */
+    save: boolean
 };
 
 class CreateInvoice extends React.Component<Props, State> {
@@ -66,7 +69,8 @@ class CreateInvoice extends React.Component<Props, State> {
             taxRate: "0.00",
             totalDue: "0.00",
             invoiceNum: "0000",
-            invoiceDate: "00-00-0000"
+            invoiceDate: "00-00-0000",
+            save: false
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
@@ -165,7 +169,7 @@ class CreateInvoice extends React.Component<Props, State> {
                 nameTo, companyTo, streetTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
                 comments } = formValue; // get data from form
 
-        const { invoiceItems, currentUser } = this.state;
+        const { invoiceItems, currentUser, save } = this.state;
 
         this.setState({ loading: true });
 
@@ -180,11 +184,16 @@ class CreateInvoice extends React.Component<Props, State> {
 
                     this.setState({
                         flash: true,
-                        flashMessage: response.data.message,
+                        //flashMessage: response.data.message,
+                        flashMessage: "Invoice saved successfully!",
                         flashType: "success",
                         loading: false,
                         invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
                     });
+
+                    if (save) {
+                        this.invoiceStatusToPending();
+                    }
                 },
                 error => { // creation not successful
 
@@ -201,6 +210,7 @@ class CreateInvoice extends React.Component<Props, State> {
                         flashType: "error",
                         loading: false
                     });
+                    console.log(resMessage);
                 }
             );
             //console.log("created by id: "+ createdBy);
@@ -226,9 +236,11 @@ class CreateInvoice extends React.Component<Props, State> {
 
                     this.setState({
                         flash: true,
-                        flashMessage: response.data.message,
+                        //flashMessage: response.data.message,
+                        flashMessage: "Invoice created successfully!",
                         flashType: "success",
-                        loading: false
+                        loading: false,
+                        save: false
                     });
                 },
                 error => { // update not successful
@@ -240,12 +252,14 @@ class CreateInvoice extends React.Component<Props, State> {
                         error.message ||
                         error.toString();
 
-                    this.setState({
+                    console.log("Failed - " + resMessage);
+                    this.setState({ save: false })
+                    /*this.setState({
                         flash: true,
                         flashMessage: resMessage,
                         flashType: "error",
                         loading: false
-                    });
+                    });*/
                 }
             );
 
@@ -333,9 +347,13 @@ class CreateInvoice extends React.Component<Props, State> {
         }
 
         //console.log(newList);
-        this.setState({ invoiceItems: newList });
-        this.calculateSubtotal(); // recalculate subtotal
-        this.calculateAmountDue(); // recalculate amount due
+        this.setState({ invoiceItems: newList }, () => {
+            //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
+            //  use a callback when an action should be performed immediately after setting state.
+            this.calculateSubtotal(); // recalculate subtotal
+            this.calculateAmountDue(); // recalculate amount due
+        });
+
     }
 
     calculateAmountDue() {
@@ -351,7 +369,6 @@ class CreateInvoice extends React.Component<Props, State> {
                 total += parseFloat(element.amount);
             });
 
-            //console.log(total);
             tax = total * ( parseFloat(taxRate) );
             total += tax;
             this.setState({totalDue: String( total.toFixed(2) )});
@@ -416,7 +433,7 @@ class CreateInvoice extends React.Component<Props, State> {
                               validationSchema={this.validationSchema}
                               onSubmit={this.handleSubmit}  // onSubmit function executes if there are no errors
                             >
-                                {({ values, errors, touched, resetForm }) => (
+                                {({ values, errors, touched, resetForm, isValid, dirty }) => (
                                     <Form>
                                         <div className="row m-0">
                                             <div className="row m-0 col-12">
@@ -792,6 +809,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           type="submit"
                                                           id="invoice-draft-btn"
                                                           className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
+                                                          disabled={!(isValid && dirty)}
                                                         >
                                                             <i className="bi bi-check align-self-center"></i>
                                                             <span className="mx-1"></span>
@@ -801,8 +819,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         <button
                                                           type="button"
                                                           id="invoice-save-btn"
-                                                          onClick={() => {this.handleSubmit(values); this.invoiceStatusToPending();}}
+                                                          onClick={() => {this.handleSubmit(values); this.setState({ save: true }); /*this.invoiceStatusToPending();*/ }}
                                                           className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
+                                                          disabled={!(isValid && dirty)}
                                                         >
                                                             <i className="bi bi-check-circle align-self-center"></i>
                                                             <span className="mx-1"></span>

@@ -142,3 +142,11 @@ label {
 .bg-paid {
     background-image: linear-gradient( to bottom right, rgba(6, 171, 79, 1), rgba(29, 250, 127, 1) );
 }
+
+.link-no-style {
+    text-decoration: none;
+}
+
+.text-mini {
+    font-size: calc(1px + 2vmin);
+}

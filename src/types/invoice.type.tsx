@@ -58,13 +58,26 @@ export type Invoice = {
     emailTo: string,
 
     /** list of items for the invoice */
-    invoiceItems: InvoiceItem[],
+    items: InvoiceItem[],
 
     /** additional words to be considered */
     comments: string,
 
     /** id number os user creating the invoice */
-    createdBy: number
+    createdBy: number,
+
+    /** Sum of all invoice items amounts */
+    subtotal: string,
+
+    /** Rate of tax applied to subtotal */
+    taxRate: string,
+
+    /** Amount of tax to be added */
+    tax: string,
+
+    /** Subtotal plus tax */
+    totalDue: string
+
 };
 
 export type IStatus = "draft" | "pending" | "approved" | "paid"; // possible status values for invoices
@@ -116,13 +129,25 @@ export type InvoiceData = {
     emailTo: string,
 
     /** list of items for the invoice */
-    invoiceItems: InvoiceItem[],
+    items: InvoiceItem[],
 
     /** additional words to be considered */
     comments: string,
 
     /** id number os user creating the invoice */
     createdBy: number,
+
+    /** Sum of all invoice items amounts */
+    subtotal: string,
+
+    /** Rate of tax applied to subtotal */
+    taxRate: string,
+
+    /** Amount of tax to be added */
+    tax: string,
+
+    /** Subtotal plus tax */
+    totalDue: string,
 
     /** status of the invoice */
     status: IStatus,

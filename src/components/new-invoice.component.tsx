@@ -32,7 +32,7 @@ type State = {
     flash: boolean,
     flashMessage: string,
     flashType: Color,
-    invoiceItems: InvoiceItem[],
+    items: InvoiceItem[],
     subtotal: string,
     tax: string,
     taxRate: string,
@@ -58,7 +58,7 @@ class CreateInvoice extends React.Component<Props, State> {
             flash: false,
             flashMessage: "",
             flashType: "info",
-            invoiceItems: [{
+            items: [{
                 description: "",
                 price: "0.00",
                 quantity: "0",
@@ -147,13 +147,20 @@ class CreateInvoice extends React.Component<Props, State> {
             emailTo: Yup.string()
                  .email("This is not a valid email!")
                  .required("This field is required!"),
-            formInvoiceItems: Yup.array()
+            formitems: Yup.array()
                 .of(
                     Yup.object().shape({
-                        description: Yup.string().required("Description is required"),
-                        price: Yup.string().required("Price is required"),
-                        quantity: Yup.string().required("Quantity is required"),
-                        amount: Yup.string().required("Amount is required"),
+                        description: Yup.string()
+                            .required("Description is required"),
+                        price: Yup.string()
+                            .required("Price is required")
+                            .matches(/^\d*[.{1}\d*]\d*$/, "Must be only digits"),
+                        quantity: Yup.string()
+                            .required("Quantity is required")
+                            .matches(/^0*[1-9]\d*$/, "Must be integer greater than 0"),
+                        amount: Yup.string()
+                            .required("Amount is required")
+                            .matches(/^\d*[.{1}\d*]\d*$/, "Must be only digits"),
                     })
                 )
                 .required("Invalid invoice item(s)"),
@@ -169,7 +176,8 @@ class CreateInvoice extends React.Component<Props, State> {
                 nameTo, companyTo, streetTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
                 comments } = formValue; // get data from form
 
-        const { invoiceItems, currentUser, save } = this.state;
+        const { items, currentUser, save,
+               subtotal, tax, taxRate, totalDue } = this.state;
 
         this.setState({ loading: true });
 
@@ -178,7 +186,8 @@ class CreateInvoice extends React.Component<Props, State> {
 
             InvoiceService.createInvoice({companyFrom, streetFrom, cityFrom, stateFrom, zipFrom, phoneFrom,
                                          nameTo, companyTo, streetTo, cityTo, stateTo, zipTo,
-                                         phoneTo, emailTo, invoiceItems, comments, createdBy})
+                                         phoneTo, emailTo, items, comments, createdBy,
+                                         subtotal, taxRate, tax, totalDue})
             .then(
                 response => { // creation successful
 
@@ -282,25 +291,25 @@ class CreateInvoice extends React.Component<Props, State> {
     addItem() {
         // add a new item to the invoice
 
-        const { invoiceItems } = this.state;
-        const newList = invoiceItems.concat({
+        const { items } = this.state;
+        const newList = items.concat({
             description: "",
             price: "0.00",
             quantity: "0",
             amount: "0.00"
         });
 
-        this.setState({ invoiceItems: newList });
+        this.setState({ items: newList });
     }
 
     removeItem(index: number) {
         // remove an item from the invoice
 
-        const { invoiceItems } = this.state;
+        const { items } = this.state;
 
-        if (invoiceItems.length !== 1) {
-            const newList = invoiceItems.filter((item, j) => index !== j);
-            this.setState({ invoiceItems: newList });
+        if (items.length !== 1) {
+            const newList = items.filter((item, j) => index !== j);
+            this.setState({ items: newList });
             this.calculateSubtotal(); // recalculate subtotal
             this.calculateAmountDue(); // recalculate amount due
 
@@ -322,12 +331,12 @@ class CreateInvoice extends React.Component<Props, State> {
     calculateSubtotal() {
         // sum the amounts of all invoice items
 
-        const { invoiceItems } = this.state;
+        const { items } = this.state;
         let total = 0.00;
 
         try {
 
-            invoiceItems.forEach(element => {
+            items.forEach(element => {
                 total += parseFloat(element.price) * parseInt(element.quantity);
             });
 
@@ -347,7 +356,7 @@ class CreateInvoice extends React.Component<Props, State> {
         }
 
         //console.log(newList);
-        this.setState({ invoiceItems: newList }, () => {
+        this.setState({ items: newList }, () => {
             //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
             //  use a callback when an action should be performed immediately after setting state.
             this.calculateSubtotal(); // recalculate subtotal
@@ -359,13 +368,13 @@ class CreateInvoice extends React.Component<Props, State> {
     calculateAmountDue() {
         // calculate total amount due by adding tax to the subtotal
 
-        const { invoiceItems, taxRate } = this.state;
+        const { items, taxRate } = this.state;
         let total = 0.00;
         let tax = 0.00;
 
         try {
 
-            invoiceItems.forEach(element => {
+            items.forEach(element => {
                 total += parseFloat(element.amount);
             });
 
@@ -381,7 +390,7 @@ class CreateInvoice extends React.Component<Props, State> {
     render() {
 
         const { userReady, currentUser, loading, flash, flashMessage, flashType,
-                invoiceItems, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
+                items, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
         const initialValues = {
             companyFrom: "",
@@ -398,7 +407,7 @@ class CreateInvoice extends React.Component<Props, State> {
             zipTo: "",
             phoneTo: "",
             emailTo: "",
-            formInvoiceItems: [{
+            formitems: [{
                 description: "",
                 price: "0.00",
                 quantity: "0",
@@ -644,7 +653,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
 
                                                 <FieldArray
-                                                    name="formInvoiceItems"
+                                                    name="formitems"
                                                     render={ ({ remove, push }) => (
 
                                                     <div className="px-0">
@@ -661,48 +670,48 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                 </div>
                                                             </div>
 
-                                                            {values.formInvoiceItems && values.formInvoiceItems.map( (item: InvoiceItem, index: number) =>
+                                                            {values.formitems && values.formitems.map( (item: InvoiceItem, index: number) =>
 
                                                                 <div key={index} className="col-12 d-flex">
                                                                     <div className="input-group-sm col-5">
                                                                         <Field
-                                                                          name={`formInvoiceItems.[${index}].description`}
+                                                                          name={`formitems.[${index}].description`}
                                                                           type="text"
-                                                                          className={errors.formInvoiceItems && (errors.formInvoiceItems[index] as InvoiceItem).description && touched.formInvoiceItems && touched.formInvoiceItems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                          className={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                           data-bs-toggle="tooltip"
                                                                           data-bs-placement="top"
-                                                                          title={errors.formInvoiceItems && (errors.formInvoiceItems[index] as InvoiceItem).description && touched.formInvoiceItems && touched.formInvoiceItems[index].description ? (errors.formInvoiceItems[index] as InvoiceItem).description : ''}
+                                                                          title={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? (errors.formitems[index] as InvoiceItem).description : ''}
                                                                           onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                                            this.handleItemChange(values.formInvoiceItems)
+                                                                            this.handleItemChange(values.formitems)
                                                                           }
                                                                         />
                                                                     </div>
                                                                     <div className="input-group-sm col-2">
                                                                         <Field
-                                                                          name={`formInvoiceItems.[${index}].price`}
+                                                                          name={`formitems.[${index}].price`}
                                                                           type="text"
                                                                           className="form-control text-start"
                                                                           onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                                            this.handleItemChange(values.formInvoiceItems)
+                                                                            this.handleItemChange(values.formitems)
                                                                           }
                                                                         />
                                                                     </div>
                                                                     <div className="input-group-sm col-2">
                                                                         <Field
-                                                                          name={`formInvoiceItems.[${index}].quantity`}
+                                                                          name={`formitems.[${index}].quantity`}
                                                                           type="text"
                                                                           className="form-control text-start"
                                                                           onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
-                                                                            this.handleItemChange(values.formInvoiceItems)
+                                                                            this.handleItemChange(values.formitems)
                                                                           }
                                                                         />
                                                                     </div>
                                                                     <div className="input-group-sm col-3">
                                                                         <Field
-                                                                          name={`formInvoiceItems.[${index}].amount`}
+                                                                          name={`formitems.[${index}].amount`}
                                                                           type="text"
                                                                           className="form-control text-start"
-                                                                          value={invoiceItems[index].amount}
+                                                                          value={items[index].amount}
                                                                         />
                                                                     </div>
 
@@ -710,7 +719,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                       type="button"
                                                                       id="delete-item-btn"
                                                                       className="btn p-0"
-                                                                      onClick={() => {  values.formInvoiceItems.length <= 1 ? console.log("") :  remove(index); this.removeItem(index) } }
+                                                                      onClick={() => {  values.formitems.length <= 1 ? console.log("") :  remove(index); this.removeItem(index) } }
                                                                     >
                                                                         <i className="bi bi-trash align-self-center fs-5"></i>
                                                                     </button>
@@ -719,7 +728,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
 
                                                             {/* Error message for invoice items */}
-                                                            <ErrorMessage name="formInvoiceItems" component="div" className="alert alert-danger"/>
+                                                            <ErrorMessage name="formitems" component="div" className="alert alert-danger"/>
 
                                                         </div>
 

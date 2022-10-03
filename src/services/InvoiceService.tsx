@@ -28,9 +28,13 @@ class InvoiceService {
             zipTo: invoice.zipTo,
             phoneTo: invoice.phoneTo,
             emailTo: invoice.emailTo,
-            items: invoice.invoiceItems,
+            items: invoice.items,
             comments: invoice.comments,
-            createdBy: invoice.createdBy
+            createdBy: invoice.createdBy,
+            subtotal: invoice.subtotal,
+            taxRate: invoice.taxRate,
+            tax: invoice.tax,
+            totalDue: invoice.totalDue
         });
     }
 

@@ -57,8 +57,14 @@ class ErrorBoundary extends React.Component<Props, State> {
             // Render any custom fallback UI
 
             return (
-                <div>
-                    <h2>Something went wrong.</h2>
+                <div className="container">
+                    <div className="d-flex justify-content-center my-4">
+                        <i className="bi bi-exclamation-circle-fill d-flex align-self-center fs-1"></i>
+                    </div>
+
+                    <h2 className="text-center"> Oops!</h2>
+                    <h4 className="text-center"> Something went wrong </h4>
+
                 </div>
             );
 

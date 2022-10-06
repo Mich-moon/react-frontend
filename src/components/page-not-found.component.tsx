@@ -33,11 +33,11 @@ class NotFound extends React.Component <Props, State>{
 
                 <img
                   src="https://tepeseo.com/wp-content/uploads/2019/05/404notfound.png"
-                  alt="profile-img"
-                  className="img-page-not-found"
+                  alt="not-found-img"
+                  className="img-big"
                 />
 
-                <h3> Sorry, we can't find what you're looking for </h3>
+                <span className="d-block mt-2 fw-bold"> Sorry, we can't find what you're looking for </span>
 
                 <Link to={`/`} className="btn btn-sm btn-info admin-action mt-4">Go back home</Link>
 

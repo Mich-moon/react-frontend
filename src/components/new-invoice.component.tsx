@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Navigate, useParams, Link } from "react-router-dom";
-import { Formik, Field, Form, ErrorMessage, FieldArray } from "formik";
+import { Formik, Field, Form, FieldArray } from "formik";
 import * as Yup from "yup";
 
 import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
@@ -309,10 +309,12 @@ class CreateInvoice extends React.Component<Props, State> {
 
         if (items.length !== 1) {
             const newList = items.filter((item, j) => index !== j);
-            this.setState({ items: newList });
-            this.calculateSubtotal(); // recalculate subtotal
-            this.calculateAmountDue(); // recalculate amount due
-
+            this.setState({ items: newList }, () => {
+                //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
+                //  use a callback when an action should be performed immediately after setting state.
+                this.calculateSubtotal(); // recalculate subtotal
+                this.calculateAmountDue(); // recalculate amount due
+            });
         } else {
             // flash message for failure
             this.setState({
@@ -442,7 +444,7 @@ class CreateInvoice extends React.Component<Props, State> {
                               validationSchema={this.validationSchema}
                               onSubmit={this.handleSubmit}  // onSubmit function executes if there are no errors
                             >
-                                {({ values, errors, touched, resetForm, isValid, dirty }) => (
+                                {({ values, errors, touched, resetForm, isValid, dirty, handleChange, handleBlur }) => (
                                     <Form>
                                         <div className="row m-0">
                                             <div className="row m-0 col-12">
@@ -675,40 +677,50 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                 <div key={index} className="col-12 d-flex">
                                                                     <div className="input-group-sm col-5">
                                                                         <Field
-                                                                          name={`formitems.[${index}].description`}
+                                                                          name={`formitems.${index}.description`}
                                                                           type="text"
                                                                           className={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                           data-bs-toggle="tooltip"
                                                                           data-bs-placement="top"
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? (errors.formitems[index] as InvoiceItem).description : ''}
-                                                                          onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) => {
+                                                                            handleChange(e)
                                                                             this.handleItemChange(values.formitems)
-                                                                          }
+                                                                          }}
+                                                                          //onBlur={handleBlur}
                                                                         />
                                                                     </div>
                                                                     <div className="input-group-sm col-2">
                                                                         <Field
-                                                                          name={`formitems.[${index}].price`}
+                                                                          name={`formitems.${index}.price`}
                                                                           type="text"
-                                                                          className="form-control text-start"
-                                                                          onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                          className={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                          data-bs-toggle="tooltip"
+                                                                          data-bs-placement="top"
+                                                                          title={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? (errors.formitems[index] as InvoiceItem).price : ''}
+                                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) => {
+                                                                            handleChange(e)
                                                                             this.handleItemChange(values.formitems)
-                                                                          }
+                                                                          }}
                                                                         />
                                                                     </div>
                                                                     <div className="input-group-sm col-2">
                                                                         <Field
-                                                                          name={`formitems.[${index}].quantity`}
+                                                                          name={`formitems.${index}.quantity`}
                                                                           type="text"
-                                                                          className="form-control text-start"
-                                                                          onBlur={ (e: React.FormEvent<HTMLInputElement>) =>
+                                                                          className={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                          data-bs-toggle="tooltip"
+                                                                          data-bs-placement="top"
+                                                                          title={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? (errors.formitems[index] as InvoiceItem).quantity : ''}
+                                                                          onChange={ (e: React.FormEvent<HTMLInputElement>) => {
+                                                                            handleChange(e)
                                                                             this.handleItemChange(values.formitems)
-                                                                          }
+                                                                          }}
                                                                         />
                                                                     </div>
                                                                     <div className="input-group-sm col-3">
                                                                         <Field
-                                                                          name={`formitems.[${index}].amount`}
+                                                                          name={`formitems.${index}.amount`}
                                                                           type="text"
                                                                           className="form-control text-start"
                                                                           value={items[index].amount}
@@ -725,10 +737,6 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                     </button>
                                                                 </div>
                                                             )}
-
-
-                                                            {/* Error message for invoice items */}
-                                                            <ErrorMessage name="formitems" component="div" className="alert alert-danger"/>
 
                                                         </div>
 
@@ -783,7 +791,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                   type="button"
                                                                   id="invoice-add-item-btn"
                                                                   className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
-                                                                  onClick={() => { this.addItem(); push( { description: "", price: "0.00", quantity: "0", amount: "0.00"} ) } }
+                                                                  onClick={() => { push( { description: "", price: "0.00", quantity: "0", amount: "0.00"} ); this.addItem() } }
                                                                 >
                                                                     <i className="bi bi-plus-circle align-self-center"></i>
                                                                     <span className="mx-1"></span>
@@ -828,7 +836,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         <button
                                                           type="button"
                                                           id="invoice-save-btn"
-                                                          onClick={() => {this.handleSubmit(values); this.setState({ save: true }); /*this.invoiceStatusToPending();*/ }}
+                                                          onClick={() => { this.setState({ save: true  }, () => { this.handleSubmit(values) } ); }}
                                                           className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
                                                           disabled={!(isValid && dirty)}
                                                         >

@@ -141,6 +141,12 @@ class App extends React.Component<Props, State> {
                       className="btn btn-primary sidebar-toggle"
                       onClick={() => this.toggle()}
                     >
+                        { sidebarOpen ?
+                            <i className="bi bi-arrow-bar-left align-self-center"></i>
+                        :
+                            <i className="bi bi-arrow-bar-right align-self-center"></i>
+                        }
+                        <span className="mx-1"></span>
                         <span>Toggle Sidebar</span>
                     </button>
 

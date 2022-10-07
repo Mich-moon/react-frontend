@@ -104,13 +104,10 @@ class CreateInvoice extends React.Component<Props, State> {
         const formattedToday = dd + "/" + mm + "/" + yyyy;
 
         this.setState({ invoiceDate: formattedToday });
-
-        // get id number of last invoice in database
-        //
-        this.setState({ invoiceNum: "00001" });
+        this.setState({ invoiceNum: "#####" });
 
         // get tax rate
-        //
+        // ...
         this.setState({ taxRate: "0.01" });
     }
 

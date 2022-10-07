@@ -7,7 +7,9 @@ import Fade from '@material-ui/core/Fade';   // for flash message fade
 
 import ReactModal from 'react-modal';  // for modal
 
+import AuthService from "../services/AuthService";
 import UserService from '../services/UserService';
+
 import styles from "../css/alert.module.css";
 
 import { withRouter, WithRouterProps } from './withRouter';
@@ -24,6 +26,8 @@ interface Params {};
 type Props = WithRouterProps<Params>;
 
 interface State {
+    /* Details of user currently logged into the app */
+    currentUser: IUser | null,
 
     /** A list with elements of type User */
     users: IUser[] | null,
@@ -52,6 +56,7 @@ class Users extends React.Component<Props, State> {
          // declare state variables
          super(props)
          this.state = {
+             currentUser: null,
              users: null,
              flash: false,
              flashMessage: "",
@@ -69,46 +74,33 @@ class Users extends React.Component<Props, State> {
 
     //  componentDidMount() - lifecycle method to execute code when the
     //      component is already placed in the DOM (Document Object Model).
-     componentDidMount(){
+    componentDidMount(){
 
-         UserService.getUsers().then((response) => {
-             this.setState({ users: response.data.users });
-             //console.log(response.data.users)
+        const { navigate } = this.props;  // params injected from HOC wrapper component
 
-         }).catch((error) => {
+        const currentUser = AuthService.getCurrentUser();
+        if (currentUser !== null) {
+            this.setState({ currentUser: currentUser }, () => { this.getUsers(); });
+        } else {
+            navigate("/home"); // redirect to home page
+        }
 
-             const resMessage =
-                 (error.response &&
-                 error.response.data &&
-                 error.response.data.message) ||
-                 error.message ||
-                 error.toString();
-
-             this.setState({
-                 flash: true,
-                 flashMessage: resMessage,
-                 flashType: "error",
-                 deleteID: null
-            });
-
-            // set timer on flash message
-            setTimeout(() => {
-                this.setState({ flash: false, flashMessage: "" });
-            }, 5000);
-
-         });
-     }
-
+    }
+/*
     //  componentDidUpdate() - lifecycle method to execute code after the
     //      component is updated in the DOM (Document Object Model).
-    componentDidUpdate() {
-        this.getUsers();
+    componentDidUpdate(prevState: any) {
+        if (this.state.users !== prevState.users) {
+            this.getUsers();
+            console.log("updated");
+        }
     }
-
+*/
     getUsers() {
 
         UserService.getUsers().then((response) => {
             this.setState({ users: response.data.users });
+
         }).catch((error) => {
 
             const resMessage =
@@ -118,23 +110,13 @@ class Users extends React.Component<Props, State> {
                 error.message ||
                 error.toString();
 
-            this.setState({
-                flash: true,
-                flashMessage: resMessage,
-                flashType: "error",
-                deleteID: null
-            });
+            console.log(resMessage);
+            this.setState({ users: null });
 
-            // set timer on flash message
-            setTimeout(() => {
-                this.setState({ flash: false, flashMessage: "" });
-            }, 5000);
         });
     }
 
     deleteUser() {
-
-        this.setState({modal: false}); // close the modal
 
         if (this.state.deleteID != null) {
 
@@ -149,7 +131,7 @@ class Users extends React.Component<Props, State> {
                         flash: true,
                         flashMessage: response.data.message,
                         flashType: "success"
-                    });
+                    }, () => { this.getUsers(); });
                 },
                 error => { // failure
 
@@ -210,7 +192,7 @@ class Users extends React.Component<Props, State> {
                      <button
                       type="button"
                       className="btn btn-sm btn-danger custom-mr-10"
-                      onClick={() => this.deleteUser()}
+                      onClick={() => { this.setState({modal: false}, () => { this.deleteUser() } ); } }
                      >
                         <span>Delete</span>
                      </button>

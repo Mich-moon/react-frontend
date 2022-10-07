@@ -53,8 +53,8 @@ class BoardUser extends React.Component<Props, State> {
             <div className="container">
                 <ErrorBoundary>
                     <header className="jumbotron bg-dark text-light py-4">
-                        <h3>User Board</h3>
-                        <span className="fst-italic">{this.state.content}</span>
+                        <h3>My Dashboard</h3>
+                        <span className="fst-italic">My space</span>
                     </header>
 
                     <hr/>

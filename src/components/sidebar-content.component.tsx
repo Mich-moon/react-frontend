@@ -44,7 +44,8 @@ type Props =  {};
 type State = {
     showModeratorBoard: boolean,
     showAdminBoard: boolean,
-    currentUser: IUser | undefined
+    currentUser: IUser | undefined,
+    activeItem: string
 };
 
 class SidebarContent extends React.Component<Props, State> {
@@ -58,6 +59,7 @@ class SidebarContent extends React.Component<Props, State> {
             showModeratorBoard: false,
             showAdminBoard: false,
             currentUser: undefined,
+            activeItem: "dashboard"
         };
 
     }
@@ -82,7 +84,7 @@ class SidebarContent extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { currentUser, showModeratorBoard, showAdminBoard } = this.state;
+        const { currentUser, showModeratorBoard, showAdminBoard, activeItem } = this.state;
 
 
         return (
@@ -97,34 +99,64 @@ class SidebarContent extends React.Component<Props, State> {
 
                     <div className="navbar-nav mr-auto" style={styles.sidebarLink}>
 
-                        <li className="nav-item">
+                        <li
+                            className={`nav-item ${activeItem === "home" && 'sidebar-active'}`}
+                            onClick={() => this.setState({activeItem: "home"})}
+                        >
                             <Link to={"/home"} className="nav-link">
+                                <i className="bi bi-house-door align-self-center"></i>
+                                <span className="mx-1"></span>
                                 Home
                             </Link>
                         </li>
 
                         {showModeratorBoard && (
-                            <li className="nav-item">
+                            <li
+                                className={`nav-item ${activeItem === "invoices" && 'sidebar-active'}`}
+                                onClick={() => this.setState({activeItem: "invoices"})}
+                            >
                                 <Link to={"/mod"} className="nav-link">
-                                    Moderator Board
+                                    <i className="bi bi-file-earmark-ruled align-self-center"></i>
+                                    <span className="mx-1"></span>
+                                    Invoices Board
                                 </Link>
                             </li>
                         )}
 
                         {showAdminBoard && (
-                            <li className="nav-item">
+                            <li
+                                className={`nav-item ${activeItem === "members" && 'sidebar-active'}`}
+                                onClick={() => this.setState({activeItem: "members"})}
+                            >
                                 <Link to={"/admin"} className="nav-link">
-                                    Admin Board
+                                    <i className="bi bi-people align-self-center"></i>
+                                    <span className="mx-1"></span>
+                                    Members Board
                                 </Link>
                             </li>
                         )}
 
                         {currentUser && (
-                            <li className="nav-item">
+                            <li
+                                className={`nav-item ${activeItem === "dashboard" && 'sidebar-active'}`}
+                                onClick={() => this.setState({activeItem: "dashboard"})}
+                            >
                                 <Link to={"/user"} className="nav-link">
-                                    User Board
+                                    <i className="bi bi-speedometer2 align-self-center"></i>
+                                    <span className="mx-1"></span>
+                                    My Dashboard
                                 </Link>
+                            </li>
+                        )}
+
+                        {currentUser && (
+                            <li
+                                className={`nav-item ${activeItem === "settings" && 'sidebar-active'}`}
+                                onClick={() => this.setState({activeItem: "settings"})}
+                           >
                                 <Link to={"/settings"} className="nav-link">
+                                    <i className="bi bi-gear align-self-center"></i>
+                                    <span className="mx-1"></span>
                                     Settings
                                 </Link>
                             </li>

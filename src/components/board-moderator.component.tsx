@@ -61,8 +61,8 @@ class BoardModerator extends React.Component<Props, State> {
             <div className="container">
                 <ErrorBoundary>
                     <header className="jumbotron bg-dark text-light py-4">
-                        <h3>Moderator Board</h3>
-                        <span className="fst-italic">{this.state.content}</span>
+                        <h3>Invoices Board</h3>
+                        <span className="fst-italic">For Moderators - manage invoices</span>
                     </header>
 
                     <hr/>

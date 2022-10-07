@@ -3,6 +3,8 @@ import React from 'react';
 import { Navigate, useParams, Link } from "react-router-dom";
 //import { Formik, Field, Form } from "formik";
 
+import ReactModal from 'react-modal';  // for modal
+
 import AuthService from "../services/AuthService";
 import InvoiceService from "../services/InvoiceService";
 
@@ -24,8 +26,14 @@ interface Params {
 type Props = WithRouterProps<Params>;
 
 type State = {
+    /* Details of user currently logged into the app */
     currentUser: IUser | null,
-    invoice: InvoiceData | null
+
+    /** Details for the invoice being viewed */
+    invoice: InvoiceData | null,
+
+    /** Whether modal should be displayed */
+    modal: boolean
 };
 
 class ViewInvoice extends React.Component<Props, State> {
@@ -37,9 +45,13 @@ class ViewInvoice extends React.Component<Props, State> {
         super(props);
         this.state = {
             currentUser: null,
-            invoice: null
+            invoice: null,
+            modal: false
         };
 
+        // bind methods so that they are accessible from the state inside of the render() method.
+        this.deleteInvoice = this.deleteInvoice.bind(this);
+        this.handleOpenDeleteModal = this.handleOpenDeleteModal.bind(this);
     }
 
     //  componentDidMount() - lifecycle method to execute code when the
@@ -74,10 +86,49 @@ class ViewInvoice extends React.Component<Props, State> {
         });
     }
 
+    deleteInvoice() {
+
+        const { navigate } = this.props;  // params injected from HOC wrapper component
+        const { invoice } = this.state;
+
+        if (invoice != null) {
+
+            //console.log("delete"+this.state.invoice.id);
+
+            InvoiceService.deleteInvoice(invoice.id).then(
+
+                (response) => { // success
+
+                    this.setState({
+                        invoice: null,
+                    }, () => { navigate("/user"); });
+
+                },
+                error => { // failure
+
+                    const resMessage =
+                        (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                        error.message ||
+                        error.toString();
+
+                    console.log(resMessage);
+                }
+            );
+
+        }
+    }
+
+    handleOpenDeleteModal(id: number) {
+        // open modal
+        this.setState({modal: true});
+    }
+
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { currentUser, invoice } = this.state;
+        const { currentUser, invoice, modal } = this.state;
 
         const initialValues = { invoice };
 
@@ -87,13 +138,49 @@ class ViewInvoice extends React.Component<Props, State> {
                 {(currentUser != null && invoice && invoice != null) ?
                     <div>
 
+                        {/* Modal */}
+                        <ReactModal
+                            isOpen={modal}
+                            onRequestClose={() => this.setState({modal: false})}
+                            ariaHideApp={false}
+                            style={{content: {width: '400px', height: '150px', inset: '35%'},
+                                    overlay: {backgroundColor: 'rgba(44, 44, 45, 0.35)'}
+                                  }}
+                        >
+                            <div className="my-4"> Are you sure you want to delete this invoice?</div>
+
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-danger custom-mr-10"
+                                onClick={() => { this.setState({modal: false}, () => { this.deleteInvoice() } ); } }
+                            >
+                                <span>Delete</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-danger custom-mr-10"
+                                onClick={() => this.setState({modal: false})}
+                            >
+                                <span>Cancel</span>
+                            </button>
+                        </ReactModal>
+
                         {/* invoice top bar */}
                         <div className="card">
 
-                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex">
+                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
 
                                 <div className = "d-inline-flex row d-flex align-items-center col-6 mt-2">
-                                    <span className="text-start"> Status:  {invoice.status} </span>
+                                    <span className="col-2 text-start"> Status: </span>
+                                    <span className={`col-3 btn btn-outline-secondary rounded-pill p-0
+                                        ${invoice.status === "draft" && 'bg-draft'}
+                                        ${invoice.status === "pending" && 'bg-pending'}
+                                        ${invoice.status === "approved" && 'bg-approved'}
+                                        ${invoice.status === "paid" && 'bg-paid'}`
+                                    }>
+                                        {invoice.status}
+                                    </span>
                                 </div>
 
                                 <div className = "d-inline-flex row d-flex justify-content-end align-items-center col-6 mt-2">
@@ -102,7 +189,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                     <button
                                       type="button"
                                       id="invoice-edit-btn"
-                                      className="btn btn-sm btn-secondary rounded-pill px-2 py-2 col-md-4 col-sm-8 my-auto custom-mr-10"
+                                      className="btn btn-sm btn-secondary rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
                                     >
                                         <i className="bi bi-pencil-fill align-self-center"></i>
                                         <span className="mx-1"></span>
@@ -112,17 +199,26 @@ class ViewInvoice extends React.Component<Props, State> {
                                     {/* delete invoice button */}
                                     <button
                                       type="button"
-                                      id="invoice-edit-btn"
-                                      className="btn btn-sm btn-danger rounded-pill px-2 py-2 col-md-4 col-sm-8 my-auto"
+                                      id="invoice-delete-btn"
+                                      className="btn btn-sm btn-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
+                                      onClick={() => this.handleOpenDeleteModal(invoice.id)}
                                     >
                                         <i className="bi bi-x-circle-fill align-self-center"></i>
                                         <span className="mx-1"></span>
                                         <span className="align-self-center">Delete</span>
                                     </button>
+
+                                    {/* PDF button */}
+                                    <button
+                                      type="button"
+                                      id="invoice-pdf-btn"
+                                      className="btn btn-sm btn-secondary-outline px-2 py-0 col-2 my-auto"
+                                    >
+                                        <i className="bi bi-filetype-pdf align-self-center fs-2"></i>
+                                    </button>
+
                                 </div>
-
                             </div>
-
                         </div>
 
                         {/* invoice details */}
@@ -157,6 +253,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.companyFrom}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -166,6 +263,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.streetFrom}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -175,6 +273,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.cityFrom}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -184,6 +283,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.stateFrom}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -193,6 +293,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.zipFrom}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -202,6 +303,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.phoneFrom}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -218,6 +320,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.nameTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -227,6 +330,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.companyTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -236,6 +340,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.streetTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -245,6 +350,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.cityTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -254,6 +360,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.stateTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -263,6 +370,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.zipTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -272,6 +380,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.phoneTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -281,6 +390,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                       type="text"
                                                       className="form-control"
                                                       value={invoice.emailTo}
+                                                      readOnly
                                                     />
                                                 </div>
 
@@ -328,6 +438,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                                   type="text"
                                                                   className="form-control text-star"
                                                                   value={item.description}
+                                                                  readOnly
                                                                 />
                                                             </div>
                                                             <div className="input-group-sm col-2">
@@ -335,6 +446,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                                   type="text"
                                                                   className="form-control text-start"
                                                                   value={item.price}
+                                                                  readOnly
                                                                 />
                                                             </div>
                                                             <div className="input-group-sm col-2">
@@ -342,6 +454,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                                   type="text"
                                                                   className="form-control text-start"
                                                                   value={item.quantity}
+                                                                  readOnly
                                                                 />
                                                             </div>
                                                             <div className="input-group-sm col-3">
@@ -349,6 +462,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                                   type="text"
                                                                   className="form-control text-start"
                                                                   value={item.amount}
+                                                                  readOnly
                                                                 />
                                                             </div>
 
@@ -368,6 +482,7 @@ class ViewInvoice extends React.Component<Props, State> {
                                                             name="comments"
                                                             className="form-control input-group-sm"
                                                             value={invoice.comments}
+                                                            readOnly
                                                         />
                                                     </div>
 

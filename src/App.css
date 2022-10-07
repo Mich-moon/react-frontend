@@ -70,13 +70,24 @@ label {
     text-align: left;
     padding: 0 0 0 5vh;
 }
-
 .sidebar-toggle {
     background-color: #c0c0c0cc;
     border-color: #c0c0c0cc;
     display: flex;
     justify-self: left;
     margin: 20px;
+}
+.sidebar-active {
+    background-color: #282c34;
+    padding-left: 10px;
+    margin-right: 20px;
+    border-left: 1px solid;
+}
+.nav-item:hover {
+    padding-left: 10px;
+    margin-right: 20px;
+    border-left: 1px solid;
+    border-right: 1px solid;
 }
 .navbar-expand {
     flex-wrap: nowrap;

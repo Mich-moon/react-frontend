@@ -85,43 +85,22 @@ class Invoices extends React.Component<Props, State> {
 
         const currentUser = AuthService.getCurrentUser();
         if (currentUser !== null) {
-            this.setState({ currentUser: currentUser });
+            this.setState({ currentUser: currentUser }, () => { this.getInvoices(); });
         } else {
             navigate("/home"); // redirect to home page
         }
 
-        InvoiceService.getInvoices().then((response) => {
-            this.setState({ invoices: response.data.invoices });
-            console.log(response.data.invoices)
-
-        }).catch((error) => {
-            const resMessage =
-                (error.response &&
-                error.response.data &&
-                error.response.data.message) ||
-                error.message ||
-                error.toString();
-
-            this.setState({
-                flash: true,
-                flashMessage: resMessage,
-                flashType: "error"
-            });
-
-            // set timer on flash message
-            setTimeout(() => {
-                this.setState({ flash: false, flashMessage: "" });
-            }, 5000);
-
-        });
     }
-
+/*
     //  componentDidUpdate() - lifecycle method to execute code after the
     //      component is updated in the DOM (Document Object Model).
-    componentDidUpdate() {
-        this.getInvoices();
+    componentDidUpdate(prevState: any) {
+        if (this.state.invoices !== prevState.invoices) {
+            this.getInvoices();
+            console.log("updated");
+        }
     }
-
+*/
     getInvoices() {
 
         InvoiceService.getInvoices().then((response) => {
@@ -136,16 +115,9 @@ class Invoices extends React.Component<Props, State> {
                 error.message ||
                 error.toString();
 
-            this.setState({
-                flash: true,
-                flashMessage: resMessage,
-                flashType: "error"
-            });
+            console.log(resMessage);
+            this.setState({ invoices: null });
 
-            // set timer on flash message
-            setTimeout(() => {
-                this.setState({ flash: false, flashMessage: "" });
-            }, 5000);
         });
     }
 
@@ -155,8 +127,6 @@ class Invoices extends React.Component<Props, State> {
 
     deleteInvoice() {
 
-        this.setState({modal: false}); // close the modal
-
         if (this.state.deleteID != null) {
 
             //console.log("delete"+this.state.deleteID);
@@ -165,12 +135,14 @@ class Invoices extends React.Component<Props, State> {
 
                 (response) => { // success
 
+                    this.getInvoices();
+
                     // display flash message
                     this.setState({
                         flash: true,
                         flashMessage: response.data.message,
-                        flashType: "success"
-                    });
+                        flashType: "success",
+                    }, () => { this.getInvoices(); });
 
                 },
                 error => { // failure
@@ -201,7 +173,6 @@ class Invoices extends React.Component<Props, State> {
     handleOpenDeleteModal(id: number) {
         // set id of invoice to be deleted and open modal
         this.setState({modal: true, deleteID: id});
-        console.log("modal here");
     }
 
 
@@ -232,7 +203,7 @@ class Invoices extends React.Component<Props, State> {
                     <button
                         type="button"
                         className="btn btn-sm btn-danger custom-mr-10"
-                        onClick={() => this.deleteInvoice()}
+                        onClick={() => { this.setState({modal: false}, () => { this.deleteInvoice() } ); } }
                     >
                         <span>Delete</span>
                     </button>

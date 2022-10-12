@@ -4,7 +4,8 @@
  *  HOC that gives access to route props history, location, match and navigate which are
  *  not available for class components
  *
- *  An HOC wraps another component to provide additional props or functionality to the wrapped component
+ *  An HOC is a function that takes a component and returns a new component
+ *  It wraps another component to provide additional props or functionality to the wrapped component
  */
 
 
@@ -19,7 +20,7 @@ export interface WithRouterProps<T = ReturnType<typeof useParams>> {
         goBack: () => void;
         location: ReturnType<typeof useLocation>;
         push: (url: string, state?: any) => void;
-    }
+    };
     location: ReturnType<typeof useLocation>;
     match: {
         params: T;
@@ -31,6 +32,13 @@ export interface WithRouterProps<T = ReturnType<typeof useParams>> {
 export const withRouter = <P extends object>(Component: ComponentType<P>) => {
 
     return (props: Omit<P, keyof WithRouterProps>) => {
+
+        //NB - withRouter is typed such that it will pass in the props of its wrapped
+        //  component except for the props which it injects (of type
+        //  WithRouterProps) --> props: Omit<P, keyof WithRouterProps>
+
+        // Inject props into the wrapped component.
+        //  These are usually state values or instance methods.
         const location = useLocation();
         const match = { params: useParams() };
         const navigate = useNavigate();
@@ -43,13 +51,14 @@ export const withRouter = <P extends object>(Component: ComponentType<P>) => {
             replace: (url: string, state?: any) => navigate(url, {replace: true, state})
         };
 
+        // Pass props to wrapped component
         return (
             <Component
               history={history}
               location={location}
               match={match}
               navigate={navigate}
-              {...props as P}
+              {...props as P} // pass through the props of wrapped component
             />
         );
     };

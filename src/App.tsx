@@ -174,7 +174,7 @@ class App extends React.Component<Props, State> {
                             <Route path="/edituser/:userID" element={ <EditUser/> } />
 
                             <Route path="/newinvoice" element={ <CreateInvoice/> } />
-                            <Route path="/invoiceview/:invoiceID" element={ <ViewInvoice/> } />
+                            <Route path="/invoiceview/:invoiceID" element={ <ViewInvoice invID="#"/> } />
 
                         </Routes>
                     </div>

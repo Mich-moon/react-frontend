@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Navigate, Link } from "react-router-dom";
+import ReactToPrint from "react-to-print";
 
 import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
 import Fade from '@material-ui/core/Fade';   // for flash message fade
@@ -9,6 +10,8 @@ import ReactModal from 'react-modal';  // for modal
 
 import AuthService from "../services/AuthService";
 import InvoiceService from "../services/InvoiceService";
+
+import ViewInvoice from "./invoice.view.component";
 
 import styles from "../css/alert.module.css";
 
@@ -54,11 +57,14 @@ type State = {
 
 class Invoices extends React.Component<Props, State> {
 
+    /** to store this component's reference */
+    private invRef: React.RefObject<HTMLDivElement>;
+
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
 
         // declare state variables
-        super(props)
+        super(props);
         this.state = {
             currentUser: null,
             flash: false,
@@ -69,9 +75,10 @@ class Invoices extends React.Component<Props, State> {
             deleteID: null
         };
 
+        this.invRef= React.createRef(); // store the reference
+
         // bind methods so that they are accessible from the state inside of the render() method.
         this.getInvoices = this.getInvoices.bind(this);
-        this.downloadPDF = this.downloadPDF.bind(this);
         this.deleteInvoice = this.deleteInvoice.bind(this);
         this.handleOpenDeleteModal = this.handleOpenDeleteModal.bind(this);
 
@@ -103,9 +110,10 @@ class Invoices extends React.Component<Props, State> {
 */
     getInvoices() {
 
+        const { invoices } = this.state;
+
         InvoiceService.getInvoices().then((response) => {
             this.setState({ invoices: response.data.invoices });
-            //console.log(response.data.invoices)
 
         }).catch((error) => {
             const resMessage =
@@ -119,10 +127,6 @@ class Invoices extends React.Component<Props, State> {
             this.setState({ invoices: null });
 
         });
-    }
-
-    downloadPDF(id: number) {
-        console.log("PDF download coming soon");
     }
 
     deleteInvoice() {
@@ -242,21 +246,32 @@ class Invoices extends React.Component<Props, State> {
                     {(invoices != null) ?
 
                         <div className="mt-4">
-                            {invoices.map( (invoice: InvoiceData) =>
+                            {invoices.map( (invoice: InvoiceData, index: number) =>
                                 <div key={invoice.id} className="card">
                                     <div className="d-flex row justify-content-between">
 
                                         {/* download PDF button */}
                                         <div className="d-inline-flex d-flex align-items-center mx-0 col-md-2 col-sm-12">
-                                            <button
-                                                type="button"
-                                                id={`invoice-pdf-${invoice.id}`}
-                                                className="btn btn-sm bg-light rounded-pill text-secondary"
-                                                onClick={() => this.downloadPDF(invoice.id)}
-                                            >
-                                                <span className="custom-mr-10"> PDF </span>
-                                                <i className="bi bi-download align-self-center"></i>
-                                            </button>
+                                            {/* button to trigger printing of target component */}
+                                            <ReactToPrint
+                                                content={() => this.invRef.current }
+                                                trigger={() =>
+                                                    <button
+                                                        type="button"
+                                                        id={`invoice-pdf-${invoice.id}`}
+                                                        className="btn btn-sm bg-light rounded-pill text-secondary"
+                                                    >
+                                                        <span className="custom-mr-10"> PDF </span>
+                                                        <i className="bi bi-download align-self-center"></i>
+                                                    </button>
+                                                }
+                                            />
+
+                                            {/* component to be printed */}
+                                            <div style={{ display: "none" }}>
+                                                <ViewInvoice invID={`${invoice.id}`} ref={this.invRef} />
+                                            </div>
+
                                         </div>
 
                                         {/* invoice data */}

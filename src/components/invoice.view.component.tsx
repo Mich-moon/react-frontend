@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Navigate, useParams, Link } from "react-router-dom";
-//import { Formik, Field, Form } from "formik";
+import ReactToPrint from "react-to-print";
 
 import ReactModal from 'react-modal';  // for modal
 
@@ -25,6 +25,10 @@ interface Params {
 
 type Props = WithRouterProps<Params>;
 
+interface invProps extends Props {
+    invID: string;  // adding to HOC prop type
+}
+
 type State = {
     /* Details of user currently logged into the app */
     currentUser: IUser | null,
@@ -36,10 +40,15 @@ type State = {
     modal: boolean
 };
 
-class ViewInvoice extends React.Component<Props, State> {
+/* class ViewInvoice extends React.Component<Props, State> { */
+class ViewInvoice extends React.Component<invProps, State> {
+
+    /** to store this component's reference */
+    private invRef: React.RefObject<HTMLDivElement>;
 
     // constructor() - is invoked before the component is mounted.
-    constructor(props: Props) {
+    constructor(props: invProps) {
+    /* constructor(props: Props) { */
 
         // declare state variables
         super(props);
@@ -48,6 +57,8 @@ class ViewInvoice extends React.Component<Props, State> {
             invoice: null,
             modal: false
         };
+
+        this.invRef= React.createRef(); // store the reference
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.deleteInvoice = this.deleteInvoice.bind(this);
@@ -58,8 +69,16 @@ class ViewInvoice extends React.Component<Props, State> {
     //      component is already placed in the DOM (Document Object Model).
     componentDidMount() {
 
-        const { match, navigate } = this.props;  // params injected from HOC wrapper component
-        const invoiceID = parseInt(match.params.invoiceID);
+        const { match, navigate, invID } = this.props;  // props injected from HOC wrapper component
+        /* const invoiceID = parseInt(match.params.invoiceID); */
+
+        console.log(this.props);
+        let invoiceID;
+        if (this.props.invID != "#") {
+            invoiceID = parseInt(invID);
+        } else {
+            invoiceID = parseInt(match.params.invoiceID);
+        }
 
         const currentUser = AuthService.getCurrentUser();
 
@@ -72,7 +91,7 @@ class ViewInvoice extends React.Component<Props, State> {
         // get invoice data
         InvoiceService.getInvoice(invoiceID).then((response) => {
             this.setState({ invoice: response.data.invoice });
-            console.log(response.data.invoice)
+            //console.log(response.data.invoice)
 
         }).catch((error) => {
             const resMessage =
@@ -209,20 +228,27 @@ class ViewInvoice extends React.Component<Props, State> {
                                     </button>
 
                                     {/* PDF button */}
-                                    <button
-                                      type="button"
-                                      id="invoice-pdf-btn"
-                                      className="btn btn-sm btn-secondary-outline px-2 py-0 col-2 my-auto"
-                                    >
-                                        <i className="bi bi-filetype-pdf align-self-center fs-2"></i>
-                                    </button>
+                                    <ReactToPrint
+                                        content={() => this.invRef.current}
+                                        trigger={() =>
+
+                                            <button
+                                                type="button"
+                                                id="invoice-pdf-btn"
+                                                className="btn btn-sm btn-secondary-outline px-2 py-0 col-2 my-auto"
+                                                >
+                                                    <i className="bi bi-filetype-pdf align-self-center fs-2"></i>
+                                            </button>
+
+                                        }
+                                    />
 
                                 </div>
                             </div>
                         </div>
 
                         {/* invoice details */}
-                        <div className="card">
+                        <div ref={this.invRef} className="card">
                             <header className="jumbotron d-flex justify-content-between align-items-center mx-4">
                                 <img
                                   src="https://4m4you.com/wp-content/uploads/2020/06/logo-placeholder-300x120.png"

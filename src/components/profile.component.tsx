@@ -124,36 +124,40 @@ class Profile extends React.Component<Props, State> {
 
                                     <div className="d-flex flex-column">
                                         <div className="d-flex justify-content-between px-2 mb-3">
-                                            <span className="bg-draft rounded-pill p-1 px-4">
-                                                Drafts
-                                            </span>
-                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                            <div className="">
+                                                <i className="bi bi-record-circle rounded-circle bg-draft px-1 custom-mr-10"></i>
+                                                <span className="bg-draft-outline rounded-pill p-1 px-4">Drafts</span>
+                                            </div>
+                                            <div className="bg-light text-dark rounded-pill p-1 px-4">
                                                 #
-                                            </span>
+                                            </div>
                                         </div>
                                         <div className="d-flex justify-content-between px-2 mb-3">
-                                            <span className="bg-pending rounded-pill p-1 px-4">
-                                                Pending
-                                            </span>
-                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                            <div className="">
+                                                <i className="bi bi-record-circle rounded-circle bg-pending px-1 custom-mr-10"></i>
+                                                <span className="bg-pending-outline rounded-pill p-1 px-4">Pending</span>
+                                            </div>
+                                            <div className="bg-light text-dark rounded-pill p-1 px-4">
                                                 #
-                                            </span>
+                                            </div>
                                         </div>
                                         <div className="d-flex justify-content-between px-2 mb-3">
-                                            <span className="bg-approved rounded-pill p-1 px-4">
-                                                Approved
-                                            </span>
-                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                            <div className="">
+                                                <i className="bi bi-record-circle rounded-circle bg-approved px-1 custom-mr-10"></i>
+                                                <span className="bg-approved-outline rounded-pill p-1 px-4">Approved</span>
+                                            </div>
+                                            <div className="bg-light text-dark rounded-pill p-1 px-4">
                                                 #
-                                            </span>
+                                            </div>
                                         </div>
                                         <div className="d-flex justify-content-between px-2 mb-3">
-                                            <span className="bg-paid rounded-pill p-1 px-4">
-                                                Paid
-                                            </span>
-                                            <span className="bg-light text-dark rounded-pill p-1 px-4">
+                                            <div className="">
+                                                <i className="bi bi-record-circle rounded-circle bg-paid px-1 custom-mr-10"></i>
+                                                <span className="bg-paid-outline rounded-pill p-1 px-4">Paid</span>
+                                            </div>
+                                            <div className="bg-light text-dark rounded-pill p-1 px-4">
                                                 #
-                                            </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

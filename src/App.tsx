@@ -174,11 +174,26 @@ class App extends React.Component<Props, State> {
                             <Route path="/edituser/:userID" element={ <EditUser/> } />
 
                             <Route path="/newinvoice" element={ <CreateInvoice/> } />
-                            <Route path="/invoiceview/:invoiceID" element={ <ViewInvoice invID="#"/> } />
+                            <Route path="/invoiceview/:invoiceID" element={ <ViewInvoice invid="#"/> } />
 
                         </Routes>
                     </div>
 
+                    {/* footer */}
+                    <div className="bg-dark d-flex position-absolute w-100">
+                        <div className="col-3 d-flex flex-column">
+                            <span>We make invoices</span>
+                        </div>
+                        <div className="col-3 d-flex flex-column">
+                            <span>Community</span>
+                        </div>
+                        <div className="col-3 d-flex flex-column">
+                            <span>Links</span>
+                        </div>
+                        <div className="col-3 d-flex flex-column">
+                            <span>Guides</span>
+                        </div>
+                    </div>
 
                     {/* script tags */}
                     {/*<Helmet> */}

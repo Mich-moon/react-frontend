@@ -7,7 +7,6 @@ import BoardModerator from "./board-moderator.component";
 import BoardAdmin from "./board-admin.component";
 import Settings from "./settings.component";
 
-
 import AuthService from "../services/AuthService";
 
 
@@ -20,7 +19,7 @@ import { IUser } from '../types/user.type'
 const styles = {
   sidebarLink: {
     display: "block",
-    padding: "15px 0px",
+    padding: "15px 1px",
     color: "white",
     textDecoration: "none"
   },
@@ -32,8 +31,7 @@ const styles = {
     height: "100%",
     width: "250px",
     backgroundColor: "#525252",
-    color: "white",
-
+    color: "white"
   }
 };
 
@@ -89,6 +87,7 @@ class SidebarContent extends React.Component<Props, State> {
 
         return (
             <div style={styles.content}>
+
                 <nav className="sidebar" id="sidebar">
 
                     <div style={styles.sidebarLink}>
@@ -100,7 +99,7 @@ class SidebarContent extends React.Component<Props, State> {
                     <div className="navbar-nav mr-auto" style={styles.sidebarLink}>
 
                         <li
-                            className={`nav-item ${activeItem === "home" && 'sidebar-active'}`}
+                            className={`nav-item px-2 ${activeItem === "home" && 'sidebar-active'}`}
                             onClick={() => this.setState({activeItem: "home"})}
                         >
                             <Link to={"/home"} className="nav-link">
@@ -112,7 +111,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {showModeratorBoard && (
                             <li
-                                className={`nav-item ${activeItem === "invoices" && 'sidebar-active'}`}
+                                className={`nav-item px-2 ${activeItem === "invoices" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "invoices"})}
                             >
                                 <Link to={"/mod"} className="nav-link">
@@ -125,7 +124,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {showAdminBoard && (
                             <li
-                                className={`nav-item ${activeItem === "members" && 'sidebar-active'}`}
+                                className={`nav-item px-2 ${activeItem === "members" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "members"})}
                             >
                                 <Link to={"/admin"} className="nav-link">
@@ -138,7 +137,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {currentUser && (
                             <li
-                                className={`nav-item ${activeItem === "dashboard" && 'sidebar-active'}`}
+                                className={`nav-item px-2 ${activeItem === "dashboard" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "dashboard"})}
                             >
                                 <Link to={"/user"} className="nav-link">
@@ -151,7 +150,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {currentUser && (
                             <li
-                                className={`nav-item ${activeItem === "settings" && 'sidebar-active'}`}
+                                className={`nav-item px-2 ${activeItem === "settings" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "settings"})}
                            >
                                 <Link to={"/settings"} className="nav-link">
@@ -162,6 +161,7 @@ class SidebarContent extends React.Component<Props, State> {
                             </li>
                         )}
                     </div>
+
                 </nav>
 
 

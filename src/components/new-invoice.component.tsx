@@ -671,7 +671,7 @@ class CreateInvoice extends React.Component<Props, State> {
 
                                                             {values.formitems && values.formitems.map( (item: InvoiceItem, index: number) =>
 
-                                                                <div key={index} className="col-12 d-flex">
+                                                                <div key={index} className="col-12 d-flex hover-shadow mb-1">
                                                                     <div className="input-group-sm col-5">
                                                                         <Field
                                                                           name={`formitems.${index}.description`}

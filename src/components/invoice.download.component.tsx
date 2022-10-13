@@ -1,16 +1,9 @@
 import React from 'react';
 
-import { Navigate, useParams, Link } from "react-router-dom";
 import ReactToPrint from "react-to-print";
-
-import ReactModal from 'react-modal';  // for modal
 
 import AuthService from "../services/AuthService";
 import InvoiceService from "../services/InvoiceService";
-
-import styles from "../css/alert.module.css";
-
-import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
 import { Role } from '../types/role.type'
@@ -19,51 +12,28 @@ import { InvoiceData, InvoiceItem } from '../types/invoice.type'
 
 
 // types for the component props
-interface Params {
-    invoiceID: string
-};
-
-type Props = WithRouterProps<Params>;
-
-interface InvProps extends Props {
-    invid: string;  // adding to HOC prop type
+interface Props {
+    /** Details for the invoice being viewed */
+    invoice: InvoiceData;  // adding to HOC prop type
 }
 
-type ViewInvoiceProps = JSX.IntrinsicElements["div"];
-
-type State = {
-    /* Details of user currently logged into the app */
-    currentUser: IUser | null,
-
-    /** Details for the invoice being viewed */
-    invoice: InvoiceData | null,
-
-    /** Whether modal should be displayed */
-    modal: boolean
-};
+type State = {};
 
 
-class ViewInvoice extends React.Component<InvProps, State> {
+class DownloadInvoice extends React.Component<Props, State> {
 
     /** to store this component's ref */
     private invref: React.RefObject<HTMLDivElement>;
 
     // constructor() - is invoked before the component is mounted.
-    constructor(props: InvProps) {
+    constructor(props: Props) {
 
         // declare state variables
         super(props);
-        this.state = {
-            currentUser: null,
-            invoice: null,
-            modal: false
-        };
+        this.state = {};
 
         this.invref= React.createRef(); // create the reference
 
-        // bind methods so that they are accessible from the state inside of the render() method.
-        this.deleteInvoice = this.deleteInvoice.bind(this);
-        this.handleOpenDeleteModal = this.handleOpenDeleteModal.bind(this);
     }
 
     //  componentDidMount() - lifecycle method to execute code when the
@@ -76,184 +46,18 @@ class ViewInvoice extends React.Component<InvProps, State> {
             console.log("no forward ref");
         }
 
-        const { match, navigate, invid, ...rest } = this.props;  // props injected from HOC wrapper component
-        /* const invoiceID = parseInt(match.params.invoiceID); */
-
-        console.log(this.props);
-        let invoiceID;
-        if (this.props.invid != "#") {
-            invoiceID = parseInt(invid);
-        } else {
-            invoiceID = parseInt(match.params.invoiceID);
-        }
-
-        const currentUser = AuthService.getCurrentUser();
-
-        if (currentUser === null) {
-            navigate("/home"); // redirect to home page
-        } else {
-            this.setState({ currentUser: currentUser });
-        }
-
-        // get invoice data
-        InvoiceService.getInvoice(invoiceID).then((response) => {
-            this.setState({ invoice: response.data.invoice });
-            //console.log(response.data.invoice)
-
-        }).catch((error) => {
-            const resMessage =
-                (error.response &&
-                error.response.data &&
-                error.response.data.message) ||
-                error.message ||
-                error.toString();
-
-            console.log(resMessage);
-        });
-    }
-
-    deleteInvoice() {
-
-        const { navigate } = this.props;  // params injected from HOC wrapper component
-        const { invoice } = this.state;
-
-        if (invoice != null) {
-
-            //console.log("delete"+this.state.invoice.id);
-
-            InvoiceService.deleteInvoice(invoice.id).then(
-
-                (response) => { // success
-
-                    this.setState({
-                        invoice: null,
-                    }, () => { navigate("/user"); });
-
-                },
-                error => { // failure
-
-                    const resMessage =
-                        (error.response &&
-                        error.response.data &&
-                        error.response.data.message) ||
-                        error.message ||
-                        error.toString();
-
-                    console.log(resMessage);
-                }
-            );
-
-        }
-    }
-
-    handleOpenDeleteModal(id: number) {
-        // open modal
-        this.setState({modal: true});
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { currentUser, invoice, modal } = this.state;
-
-        const initialValues = { invoice };
-
+        const { invoice } = this.props;
 
         return (
-            <div {...this.props} className="container mb-4">
+            <div className="container mb-4">
 
-                {(currentUser != null && invoice && invoice != null) ?
+                {(invoice && invoice != null) ?
                     <div>
-
-                        {/* Modal */}
-                        <ReactModal
-                            isOpen={modal}
-                            onRequestClose={() => this.setState({modal: false})}
-                            ariaHideApp={false}
-                            style={{content: {width: '400px', height: '150px', inset: '35%'},
-                                    overlay: {backgroundColor: 'rgba(44, 44, 45, 0.35)'}
-                                  }}
-                        >
-                            <div className="my-4"> Are you sure you want to delete this invoice?</div>
-
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-danger custom-mr-10"
-                                onClick={() => { this.setState({modal: false}, () => { this.deleteInvoice() } ); } }
-                            >
-                                <span>Delete</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-danger custom-mr-10"
-                                onClick={() => this.setState({modal: false})}
-                            >
-                                <span>Cancel</span>
-                            </button>
-                        </ReactModal>
-
-                        {/* invoice top bar */}
-                        <div className="card">
-
-                            <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
-
-                                <div className = "d-inline-flex row d-flex align-items-center col-6 mt-2">
-                                    <span className="col-2 text-start"> Status: </span>
-                                    <span className={`col-3 rounded-pill p-0
-                                        ${invoice.status === "draft" ? "" : "bg-draft-outline"}
-                                        ${invoice.status === "pending" ? "" : "bg-pending-outline"}
-                                        ${invoice.status === "approved" ? "" : "bg-approved-outline"}
-                                        ${invoice.status === "paid" ? "" : "bg-paid-outline"}`
-                                    }>
-                                        {invoice.status}
-                                    </span>
-                                </div>
-
-                                <div className = "d-inline-flex row d-flex justify-content-end align-items-center col-6 mt-2">
-
-                                    {/* edit invoice button */}
-                                    <button
-                                      type="button"
-                                      id="invoice-edit-btn"
-                                      className="btn btn-sm btn-secondary rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
-                                    >
-                                        <i className="bi bi-pencil-fill align-self-center"></i>
-                                        <span className="mx-1"></span>
-                                        <span className="align-self-center">Edit</span>
-                                    </button>
-
-                                    {/* delete invoice button */}
-                                    <button
-                                      type="button"
-                                      id="invoice-delete-btn"
-                                      className="btn btn-sm btn-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
-                                      onClick={() => this.handleOpenDeleteModal(invoice.id)}
-                                    >
-                                        <i className="bi bi-x-circle-fill align-self-center"></i>
-                                        <span className="mx-1"></span>
-                                        <span className="align-self-center">Delete</span>
-                                    </button>
-
-                                    {/* PDF button */}
-                                    <ReactToPrint
-                                        content={() => this.invref.current}
-                                        trigger={() =>
-
-                                            <button
-                                                type="button"
-                                                id="invoice-pdf-btn"
-                                                className="btn btn-sm btn-secondary-outline px-2 py-0 col-2 my-auto"
-                                                >
-                                                    <i className="bi bi-filetype-pdf align-self-center fs-2"></i>
-                                            </button>
-
-                                        }
-                                    />
-
-                                </div>
-                            </div>
-                        </div>
 
                         {/* invoice details */}
                         <div ref={this.invref} className="card">
@@ -565,12 +369,5 @@ class ViewInvoice extends React.Component<InvProps, State> {
     }
 }
 
-//export default withRouter(ViewInvoice)
+export default DownloadInvoice
 
-// --
-
-export default React.forwardRef( withRouter( (props: any, ref: React.Ref<HTMLDivElement>) => {
-    return <ViewInvoice {...props} invref={ref}/>;
-} ) );
-
-// --

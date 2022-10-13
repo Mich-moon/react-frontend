@@ -12,6 +12,7 @@ import AuthService from "../services/AuthService";
 import InvoiceService from "../services/InvoiceService";
 
 import ViewInvoice from "./invoice.view.component";
+import DownloadInvoice from "./invoice.view.component";
 
 import styles from "../css/alert.module.css";
 
@@ -57,8 +58,8 @@ type State = {
 
 class Invoices extends React.Component<Props, State> {
 
-    /** to store this component's reference */
-    private invRef: React.RefObject<HTMLDivElement>;
+    /** to store component ref */
+    private invref: React.RefObject<HTMLDivElement>;
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
@@ -75,7 +76,8 @@ class Invoices extends React.Component<Props, State> {
             deleteID: null
         };
 
-        this.invRef= React.createRef(); // store the reference
+        //this.invref= React.createRef(); // store the reference
+        this.invref= React.createRef<HTMLDivElement>(); // create the ref
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.getInvoices = this.getInvoices.bind(this);
@@ -247,14 +249,14 @@ class Invoices extends React.Component<Props, State> {
 
                         <div className="mt-4">
                             {invoices.map( (invoice: InvoiceData, index: number) =>
-                                <div key={invoice.id} className="card">
+                                <div key={invoice.id} className="card hover-shadow">
                                     <div className="d-flex row justify-content-between">
 
                                         {/* download PDF button */}
                                         <div className="d-inline-flex d-flex align-items-center mx-0 col-md-2 col-sm-12">
                                             {/* button to trigger printing of target component */}
                                             <ReactToPrint
-                                                content={() => this.invRef.current }
+                                                content={() => this.invref.current }
                                                 trigger={() =>
                                                     <button
                                                         type="button"
@@ -269,7 +271,10 @@ class Invoices extends React.Component<Props, State> {
 
                                             {/* component to be printed */}
                                             <div style={{ display: "none" }}>
-                                                <ViewInvoice invID={`${invoice.id}`} ref={this.invRef} />
+                                                {/* <ViewInvoice invID={`${invoice.id}`} ref={this.invref} /> */}
+                                                {/* <ViewInvoice invid={`${invoice.id}`} ref={ (response: React.RefObject<HTMLDivElement>) => { this.invref = response; console.log("ref is "+response); } } /> */}
+                                                {/* <Alert className={styles.alert} severity={flashType} ref={this.invref} > Hey there </Alert> */}
+                                                <DownloadInvoice invoice={`${invoice}`} ref={this.invref}/>
                                             </div>
 
                                         </div>
@@ -289,7 +294,14 @@ class Invoices extends React.Component<Props, State> {
                                                 <span className="fw-lighter text-mini text-muted"> created by </span>
                                             </div>
                                             <div className="d-flex align-items-center flex-column col-3">
-                                                <span className="text-mini rounded-pill bg-light px-2 py-1"> {invoice.status} </span>
+                                                <span className={`text-mini rounded-pill bg-light px-2 py-1
+                                                    ${invoice.status === "draft" ? "" : "bg-draft-outline"}
+                                                    ${invoice.status === "pending" ? "" : "bg-pending-outline"}
+                                                    ${invoice.status === "approved" ? "" : "bg-approved-outline"}
+                                                    ${invoice.status === "paid" ? "" : "bg-paid-outline"}
+                                                `}>
+                                                    {invoice.status}
+                                                </span>
                                             </div>
                                         </div>
 

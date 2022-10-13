@@ -144,6 +144,15 @@ class CreateInvoice extends React.Component<Props, State> {
             emailTo: Yup.string()
                  .email("This is not a valid email!")
                  .required("This field is required!"),
+            comments: Yup.string().when("comments", (val, schema) => {
+                //if comments exist then apply max, otherwise do not
+                if(val?.length > 0) {
+                    return Yup.string().max(200, "max 200 words").required("Required");
+                }
+                else {
+                    return Yup.string().notRequired();
+                }
+            }),
             formitems: Yup.array()
                 .of(
                     Yup.object().shape({
@@ -161,7 +170,10 @@ class CreateInvoice extends React.Component<Props, State> {
                     })
                 )
                 .required("Invalid invoice item(s)"),
-        });
+        },  [
+                ["comments", "comments"],
+            ] //cyclic dependency
+        );
     }
 
     handleSubmit(formValue: { companyFrom: string; streetFrom: string; cityFrom: string; stateFrom: string; zipFrom: string; phoneFrom: string;
@@ -744,7 +756,12 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                 <div className="form-control border border-2 rounded-2 bg-light">
                                                                     <span className=""> Comments </span>
                                                                 </div>
-                                                                <textarea name="comments" className="form-control input-group-sm"/>
+                                                                <Field
+                                                                    as="textarea"
+                                                                    name="comments"
+                                                                    className="form-control input-group-sm"
+                                                                />
+                                                                {/* <textarea name="comments" className="form-control input-group-sm"/> */}
                                                             </div>
 
                                                             {/* invoice summaries */}

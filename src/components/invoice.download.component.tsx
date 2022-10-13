@@ -1,28 +1,17 @@
 import React from 'react';
 
-import ReactToPrint from "react-to-print";
-
-import AuthService from "../services/AuthService";
-import InvoiceService from "../services/InvoiceService";
-
-// types and interfaces
-import { Role } from '../types/role.type'
-import { IUser } from '../types/user.type'
 import { InvoiceData, InvoiceItem } from '../types/invoice.type'
 
-
 // types for the component props
-interface Props {
-    /** Details for the invoice being viewed */
-    invoice: InvoiceData;  // adding to HOC prop type
-}
+type Props = {
+    invoice: InvoiceData;
+};
 
 type State = {};
 
+class Test extends React.Component <Props, State>{
 
-class DownloadInvoice extends React.Component<Props, State> {
-
-    /** to store this component's ref */
+    /** to store this component's ref to provide access to its DOM */
     private invref: React.RefObject<HTMLDivElement>;
 
     // constructor() - is invoked before the component is mounted.
@@ -36,31 +25,18 @@ class DownloadInvoice extends React.Component<Props, State> {
 
     }
 
-    //  componentDidMount() - lifecycle method to execute code when the
-    //      component is already placed in the DOM (Document Object Model).
-    componentDidMount() {
-
-        if (this.invref.current) {
-            console.log(`forward ref is ${this.invref}`);
-        } else {
-            console.log("no forward ref");
-        }
-
-    }
-
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
-
         const { invoice } = this.props;
 
         return (
-            <div className="container mb-4">
+            <div ref={this.invref} className="container">
 
                 {(invoice && invoice != null) ?
                     <div>
 
                         {/* invoice details */}
-                        <div ref={this.invref} className="card">
+                        <div className="card">
                             <header className="jumbotron d-flex justify-content-between align-items-center mx-4">
                                 <img
                                   src="https://4m4you.com/wp-content/uploads/2020/06/logo-placeholder-300x120.png"
@@ -71,7 +47,6 @@ class DownloadInvoice extends React.Component<Props, State> {
                             </header>
                             <hr className="mb-4 mx-4"/>
                             <div className="">
-
 
                                 <form>
                                     <div className="row m-0">
@@ -367,7 +342,7 @@ class DownloadInvoice extends React.Component<Props, State> {
             </div>
         );
     }
+
 }
 
-export default DownloadInvoice
-
+export default Test

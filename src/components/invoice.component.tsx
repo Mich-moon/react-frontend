@@ -12,7 +12,7 @@ import AuthService from "../services/AuthService";
 import InvoiceService from "../services/InvoiceService";
 
 import ViewInvoice from "./invoice.view.component";
-import DownloadInvoice from "./invoice.view.component";
+import DownloadInvoice from "./invoice.download.component";
 
 import styles from "../css/alert.module.css";
 
@@ -59,7 +59,7 @@ type State = {
 class Invoices extends React.Component<Props, State> {
 
     /** to store component ref */
-    private invref: React.RefObject<HTMLDivElement>;
+    private invrefs: React.RefObject<DownloadInvoice>[];
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
@@ -76,8 +76,7 @@ class Invoices extends React.Component<Props, State> {
             deleteID: null
         };
 
-        //this.invref= React.createRef(); // store the reference
-        this.invref= React.createRef<HTMLDivElement>(); // create the ref
+        this.invrefs= []; // initialise empty array
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.getInvoices = this.getInvoices.bind(this);
@@ -116,6 +115,10 @@ class Invoices extends React.Component<Props, State> {
 
         InvoiceService.getInvoices().then((response) => {
             this.setState({ invoices: response.data.invoices });
+
+            for (let i = 0; i < response.data.invoices.length; i++) {
+                this.invrefs[i] = React.createRef<DownloadInvoice>(); // create the refs
+            }
 
         }).catch((error) => {
             const resMessage =
@@ -248,19 +251,26 @@ class Invoices extends React.Component<Props, State> {
                     {(invoices != null) ?
 
                         <div className="mt-4">
+
                             {invoices.map( (invoice: InvoiceData, index: number) =>
                                 <div key={invoice.id} className="card hover-shadow">
                                     <div className="d-flex row justify-content-between">
 
                                         {/* download PDF button */}
                                         <div className="d-inline-flex d-flex align-items-center mx-0 col-md-2 col-sm-12">
+
+                                            {/* component to be printed */}
+                                            <div style={{ display: "none" }}>
+                                                <DownloadInvoice invoice={invoice} ref={ this.invrefs[index] }/>
+                                            </div>
+
                                             {/* button to trigger printing of target component */}
                                             <ReactToPrint
-                                                content={() => this.invref.current }
+                                                content={() => this.invrefs[index].current }
                                                 trigger={() =>
                                                     <button
                                                         type="button"
-                                                        id={`invoice-pdf-${invoice.id}`}
+                                                        id="invoice-download-btn"
                                                         className="btn btn-sm bg-light rounded-pill text-secondary"
                                                     >
                                                         <span className="custom-mr-10"> PDF </span>
@@ -268,14 +278,6 @@ class Invoices extends React.Component<Props, State> {
                                                     </button>
                                                 }
                                             />
-
-                                            {/* component to be printed */}
-                                            <div style={{ display: "none" }}>
-                                                {/* <ViewInvoice invID={`${invoice.id}`} ref={this.invref} /> */}
-                                                {/* <ViewInvoice invid={`${invoice.id}`} ref={ (response: React.RefObject<HTMLDivElement>) => { this.invref = response; console.log("ref is "+response); } } /> */}
-                                                {/* <Alert className={styles.alert} severity={flashType} ref={this.invref} > Hey there </Alert> */}
-                                                <DownloadInvoice invoice={`${invoice}`} ref={this.invref}/>
-                                            </div>
 
                                         </div>
 

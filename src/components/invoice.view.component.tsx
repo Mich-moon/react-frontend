@@ -20,16 +20,15 @@ import { InvoiceData, InvoiceItem } from '../types/invoice.type'
 
 // types for the component props
 interface Params {
+    /* invoice id passed as a url param */
     invoiceID: string
 };
 
-type Props = WithRouterProps<Params>;
+type Props = WithRouterProps<Params>; // type for the higher order component used
 
 interface InvProps extends Props {
     invid: string;  // adding to HOC prop type
 }
-
-type ViewInvoiceProps = JSX.IntrinsicElements["div"];
 
 type State = {
     /* Details of user currently logged into the app */
@@ -45,7 +44,7 @@ type State = {
 
 class ViewInvoice extends React.Component<InvProps, State> {
 
-    /** to store this component's ref */
+    /** to store this component's ref to provide access to its DOM */
     private invref: React.RefObject<HTMLDivElement>;
 
     // constructor() - is invoked before the component is mounted.
@@ -70,21 +69,15 @@ class ViewInvoice extends React.Component<InvProps, State> {
     //      component is already placed in the DOM (Document Object Model).
     componentDidMount() {
 
-        if (this.invref.current) {
-            console.log(`forward ref is ${this.invref}`);
-        } else {
-            console.log("no forward ref");
-        }
-
         const { match, navigate, invid, ...rest } = this.props;  // props injected from HOC wrapper component
-        /* const invoiceID = parseInt(match.params.invoiceID); */
+        //console.log(this.props);
 
-        console.log(this.props);
         let invoiceID;
-        if (this.props.invid != "#") {
-            invoiceID = parseInt(invid);
-        } else {
-            invoiceID = parseInt(match.params.invoiceID);
+        if (this.props.invid != "#") { // id NOT provided in url
+            invoiceID = parseInt(invid); // get id from props
+
+        } else { // id provided in the url
+            invoiceID = parseInt(match.params.invoiceID); // get id from url param
         }
 
         const currentUser = AuthService.getCurrentUser();
@@ -156,9 +149,6 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
         const { currentUser, invoice, modal } = this.state;
 
-        const initialValues = { invoice };
-
-
         return (
             <div {...this.props} className="container mb-4">
 
@@ -192,6 +182,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                 <span>Cancel</span>
                             </button>
                         </ReactModal>
+
 
                         {/* invoice top bar */}
                         <div className="card">
@@ -254,6 +245,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                 </div>
                             </div>
                         </div>
+
 
                         {/* invoice details */}
                         <div ref={this.invref} className="card">
@@ -565,12 +557,4 @@ class ViewInvoice extends React.Component<InvProps, State> {
     }
 }
 
-//export default withRouter(ViewInvoice)
-
-// --
-
-export default React.forwardRef( withRouter( (props: any, ref: React.Ref<HTMLDivElement>) => {
-    return <ViewInvoice {...props} invref={ref}/>;
-} ) );
-
-// --
+export default withRouter(ViewInvoice)

@@ -64,6 +64,12 @@ label {
     padding: 0;
 }
 
+.input-line {
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid;
+}
+
 /* Navigation */
 .sidebar {
     text-align: left;

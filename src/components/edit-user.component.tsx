@@ -549,7 +549,7 @@ class EditUser extends React.Component<Props, State> {
                                                 />
                                             </div>
                                             <div className="form-group pb-1">
-                                                <Field name="bio_password" type="text" className="form-control" placeholder="My Password"/>
+                                                <Field name="bio_password" type="password" className="form-control" placeholder="My Password"/>
                                                 <ErrorMessage
                                                   name="bio_password"
                                                   component="div"

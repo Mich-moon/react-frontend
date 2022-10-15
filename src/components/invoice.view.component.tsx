@@ -248,279 +248,188 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
 
                         {/* invoice details */}
-                        <div ref={this.invref} className="card">
-                            <header className="jumbotron d-flex justify-content-between align-items-center mx-4">
-                                <img
-                                  src="https://4m4you.com/wp-content/uploads/2020/06/logo-placeholder-300x120.png"
-                                  alt="invoice-logo"
-                                  className="invoice-logo mx-4"
-                                />
-                                <h3 className="mx-4"> Invoice </h3>
-                            </header>
-                            <hr className="mb-4 mx-4"/>
-                            <div className="">
+                        <div ref={this.invref} className="card p-0">
 
+                            <header className="d-flex d-print-flex align-items-center my-5">
+                                <div className="bg-dark text-light col-md-6 col-sm-12 px-0 py-4 me-auto">
+                                    <h3 className="fs-1 mx-4"> INVOICE </h3>
+                                </div>
+
+                                <div className="d-flex d-print-flex justify-content-end col-md-6 col-sm-12">
+
+                                    <div className="fw-bold d-inline d-print-inline col-sm-6 d-flex d-print-flex flex-column px-3">
+                                        <div className="d-flex d-print-flex col-12 ms-auto">
+                                            <span className="col-6 text-start"> INVOICE #: </span>
+                                            <span className="col-6 text-end"> {invoice.id} </span>
+                                        </div>
+                                        <div className="d-flex d-print-flex col-12 ms-auto">
+                                            <span className="col-6 text-start"> DATE: </span>
+                                            <span className="col-6 text-end"> {invoice.date} </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-dark d-inline d-print-inline col-sm-3">
+                                        <div className="px-4"></div><div className="px-4"></div>
+                                    </div>
+
+                                </div>
+                            </header>
+
+                            <div className="px-4 mb-2">
 
                                 <form>
                                     <div className="row m-0">
-                                        <div className="row m-0 col-12">
-                                            <div className = "row mx-0 gx-1 col-md-6 col-sm-12">
+                                        <div className="row m-0 col-12 d-flex d-print-flex justify-content-between">
 
-                                                {/* Bill from */}
-                                                <div className="form-group col-md-12 pb-1">
-                                                    <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
-                                                        <strong className=""> Bill from </strong>
-                                                    </div>
-                                                </div>
+                                            {/* Bill to */}
+                                            <div className="text-start d-flex d-print-flex flex-column mx-0 gx-1 col-md-6 col-sm-12">
 
-                                                <div className="form-group col-md-12 pb-1 input-group-lg">
-                                                    <input
-                                                      name="companyFrom"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.companyFrom}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <input
-                                                      name="streetFrom"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.streetFrom}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <input
-                                                      name="cityFrom"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.cityFrom}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                    <input
-                                                      name="stateFrom"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.stateFrom}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                    <input
-                                                      name="zipFrom"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.zipFrom}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <input
-                                                      name="phoneFrom"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.phoneFrom}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                {/* Bill to */}
-                                                <div className="form-group col-md-12 pb-1 mt-4">
-                                                    <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
+                                                <div className="col-md-12 pb-1">
+                                                    <div className="col-md-12 border border-2 bg-light p-2">
                                                         <strong className=""> Bill to </strong>
                                                     </div>
                                                 </div>
 
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <input
-                                                      name="nameTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.nameTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.nameTo}
+                                                    </span>
                                                 </div>
 
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <input
-                                                      name="companyTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.companyTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.companyTo}
+                                                    </span>
                                                 </div>
 
-                                                <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                    <input
-                                                      name="streetTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.streetTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.streetTo}
+                                                    </span>
                                                 </div>
 
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <input
-                                                      name="cityTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.cityTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.cityTo}, {invoice.stateTo}
+                                                    </span>
                                                 </div>
 
-                                                <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                    <input
-                                                      name="stateTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.stateTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.zipTo}
+                                                    </span>
                                                 </div>
 
-                                                <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                    <input
-                                                      name="zipTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.zipTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.phoneTo}
+                                                    </span>
                                                 </div>
 
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <input
-                                                      name="phoneTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.phoneTo}
-                                                      readOnly
-                                                    />
-                                                </div>
-
-                                                <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                    <input
-                                                      name="emailTo"
-                                                      type="text"
-                                                      className="form-control"
-                                                      value={invoice.emailTo}
-                                                      readOnly
-                                                    />
+                                                <div className="col-md-12 pb-1 px-4">
+                                                    <span className="">
+                                                        {invoice.emailTo}
+                                                    </span>
                                                 </div>
 
                                             </div>
 
-                                            <div className = "col-md-6 col-sm-12 px-0 ">
-                                                <div className="border border-2 rounded-2 mx-2">
-                                                    <table className="table table-bordered-dark mb-0">
-                                                        <thead className="table-light">
-                                                            <tr>
-                                                                <th> INVOICE # </th>
-                                                                <th> DATE </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td> {invoice.id} </td>
-                                                                <td> {invoice.date}</td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
+                                            {/* Bill from */}
+                                            <div className="text-start d-flex d-print-flex flex-column mx-0 gx-1 col-md-5 col-sm-8">
 
+                                                <div className="col-md-12 pb-1 px-4 border-start border-2 fs-5">
+                                                    <span className="fw-bold">
+                                                        {invoice.companyFrom}
+                                                    </span>
+                                                </div>
+
+                                                <div className="col-md-12 pb-1 px-4 border-start border-2">
+                                                    <span className="">
+                                                        {invoice.streetFrom}, {invoice.cityFrom}
+                                                    </span>
+                                                </div>
+
+                                                <div className="col-md-12 pb-1 px-4 border-start border-2">
+                                                    <span className="">
+                                                        {invoice.stateFrom}
+                                                    </span>
+                                                </div>
+
+                                                <div className="col-md-12 pb-1 px-4 border-start border-2">
+                                                    <span className="">
+                                                        {invoice.zipFrom}
+                                                    </span>
+                                                </div>
+
+                                                <div className="col-md-12 pb-1 px-4 border-start border-2">
+                                                    <span className="">
+                                                        {invoice.phoneFrom}
+                                                    </span>
+                                                </div>
+
+                                            </div>
 
                                             <div className="px-0">
 
                                                 {/* Items */}
-                                                <div className = "row mx-0 px-0 gx-1 col-md-12">
+                                                <div className="row mx-0 px-0 gx-1 col-md-12">
 
-                                                    <div className="form-group col-12 pb-1 mt-4">
-                                                        <div className="form-control col-md-12 border border-2 rounded-2 bg-light py-2 d-flex">
-                                                            <strong className="col-5"> Description </strong>
-                                                            <strong className="col-2"> Price </strong>
-                                                            <strong className="col-2"> Quantity </strong>
-                                                            <strong className="col-3"> Amount </strong>
-                                                        </div>
+                                                    <div className="bg-dark text-light col-md-12 pb-1 mt-4 py-2 d-flex d-print-flex">
+                                                        <strong className="col-5"> Description </strong>
+                                                        <strong className="col-2"> Price </strong>
+                                                        <strong className="col-2"> Quantity </strong>
+                                                        <strong className="col-3"> Amount </strong>
                                                     </div>
 
                                                     {invoice && invoice.items != null && invoice.items.map( (item: InvoiceItem, index: number) =>
 
-                                                        <div key={index} className="col-12 d-flex mb-1">
-                                                            <div className="input-group-sm col-5">
-                                                                <input
-                                                                  type="text"
-                                                                  className="form-control text-star"
-                                                                  value={item.description}
-                                                                  readOnly
-                                                                />
+                                                        <div key={index} className="col-12 d-flex d-print-flex py-2 border-bottom border-2">
+                                                            <div className="col-5">
+                                                                <span className="text-start">
+                                                                    {item.description}
+                                                                </span>
                                                             </div>
-                                                            <div className="input-group-sm col-2">
-                                                                <input
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  value={item.price}
-                                                                  readOnly
-                                                                />
+                                                            <div className="col-2">
+                                                                <span className="text-start">
+                                                                    $ {item.price}
+                                                                </span>
                                                             </div>
-                                                            <div className="input-group-sm col-2">
-                                                                <input
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  value={item.quantity}
-                                                                  readOnly
-                                                                />
+                                                            <div className="col-2">
+                                                                <span className="text-start">
+                                                                    {item.quantity}
+                                                                </span>
                                                             </div>
-                                                            <div className="input-group-sm col-3">
-                                                                <input
-                                                                  type="text"
-                                                                  className="form-control text-start"
-                                                                  value={item.amount}
-                                                                  readOnly
-                                                                />
+                                                            <div className="col-3">
+                                                                <span className="text-start">
+                                                                    $ {item.amount}
+                                                                </span>
                                                             </div>
 
                                                         </div>
                                                     )}
-
                                                 </div>
 
-                                                <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
+                                                <div className="row mx-0 px-0 gx-1 col-12 pt-2 mt-4 d-flex d-print-flex justify-content-between">
 
                                                     {/* comments */}
-                                                    <div className = "row col-md-7 col-sm-12">
-                                                        <div className="form-control border border-2 rounded-2 bg-light">
-                                                            <span className=""> Comments </span>
+                                                    <div className="row col-md-7 col-sm-12">
+                                                        <div className="border border-2 bg-light">
+                                                            <span className="fw-bold"> Comments </span>
                                                         </div>
-                                                        <textarea
-                                                            name="comments"
-                                                            className="form-control input-group-sm"
-                                                            value={invoice.comments}
-                                                            readOnly
-                                                        />
+                                                        <span className="text-start text-wrap">
+                                                            {invoice.comments}
+                                                        </span>
                                                     </div>
 
                                                     {/* invoice summaries */}
-                                                    <div className = "d-flex flex-column col-md-5 col-sm-12">
+                                                    <div className = "d-flex d-print-flex flex-column col-md-5 col-sm-12">
 
-                                                        <div className="row d-flex">
+                                                        <div className="row d-flex d-print-flex">
                                                             <div className="col-6 text-start">
                                                                 <span className="text-uppercase"> subtotal </span>
                                                             </div>
                                                             <div className="col-6 text-end">
-                                                                <span> {invoice.subtotal} </span>
+                                                                <span> $ {invoice.subtotal} </span>
                                                             </div>
                                                         </div>
 
@@ -529,16 +438,16 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                                                 <span className="text-uppercase"> tax </span>
                                                             </div>
                                                             <div className="col-6 text-end">
-                                                                <span> {invoice.tax} </span>
+                                                                <span> $ {invoice.tax} </span>
                                                             </div>
                                                         </div>
 
-                                                        <div className="row d-flex">
+                                                        <div className="row d-flex d-print-flex fs-5">
                                                             <div className="col-6 text-start">
                                                                 <span className="text-uppercase fw-bold"> total due </span>
                                                             </div>
                                                             <div className="col-6 text-end fw-bold">
-                                                                <span> {invoice.totalDue} </span>
+                                                                <span> $ {invoice.totalDue} </span>
                                                             </div>
                                                         </div>
 
@@ -549,6 +458,13 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                     </div>
                                 </form>
                             </div>
+
+                            <div className="bg-dark py-4 mt-4 w-100">
+                                <div className="my-3"></div>
+                                <span className="text-muted fst-italic">Thank You for your business</span>
+                                <div className="my-3"></div>
+                            </div>
+
                         </div>
                     </div>
                 : null}

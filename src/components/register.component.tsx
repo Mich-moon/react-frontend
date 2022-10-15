@@ -172,17 +172,16 @@ class Register extends React.Component<Props, State> {
         return (
             <div className="col-md-12">
                 <div className="card card-container">
-                    <img
-                        src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-                        alt="profile-img"
-                        className="profile-img-card"
-                    />
+
+                    <h3>Register</h3>
+                    <span className="mb-4"></span>
+
                     <Formik
                         initialValues={initialValues}
                         validationSchema={this.validationSchema}
                         onSubmit={this.handleRegister}  // onSubmit function executes if there are no errors
                     >
-                        <Form>
+                        <Form className="text-start">
                             {!successful && (
                                 <div>
                                     <div className="form-group">
@@ -255,13 +254,12 @@ class Register extends React.Component<Props, State> {
                                         />
                                     </div>
 
-                                    <div className="form-group mt-4">
+                                    <div className="form-group my-4">
 
-                                        <button type="submit" className="btn btn-primary btn-block">
+                                        <button type="submit" className="btn btn-primary btn-block mb-4 w-100">
                                             Register
                                         </button>
-                                        <span className="mx-4"></span>
-                                        <button type="reset" className="btn btn-warning">
+                                        <button type="reset" className="btn btn-light w-100">
                                             Reset
                                         </button>
 

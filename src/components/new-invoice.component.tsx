@@ -59,7 +59,7 @@ class CreateInvoice extends React.Component<Props, State> {
             flashMessage: "",
             flashType: "info",
             items: [{
-                description: "",
+                description: "desc",
                 price: "0.00",
                 quantity: "0",
                 amount: "0.00"
@@ -77,6 +77,9 @@ class CreateInvoice extends React.Component<Props, State> {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.addItem = this.addItem.bind(this);
         this.removeItem = this.removeItem.bind(this);
+        this.newDesc = this.newDesc.bind(this);
+        this.newPrice = this.newPrice.bind(this);
+        this.newQty = this.newQty.bind(this);
         this.calculateSubtotal = this.calculateSubtotal.bind(this);
         this.handleItemChange = this.handleItemChange.bind(this);
         this.calculateAmountDue = this.calculateAmountDue.bind(this);
@@ -302,13 +305,15 @@ class CreateInvoice extends React.Component<Props, State> {
 
         const { items } = this.state;
         const newList = items.concat({
-            description: "",
+            description: "desc",
             price: "0.00",
             quantity: "0",
             amount: "0.00"
         });
 
         this.setState({ items: newList });
+        console.log("new list");
+        console.log(newList);
     }
 
     removeItem(index: number) {
@@ -318,11 +323,18 @@ class CreateInvoice extends React.Component<Props, State> {
 
         if (items.length !== 1) {
             const newList = items.filter((item, j) => index !== j);
+            console.log("new list");
+            console.log(newList);
+
             this.setState({ items: newList }, () => {
                 //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
                 //  use a callback when an action should be performed immediately after setting state.
-                this.calculateSubtotal(); // recalculate subtotal
-                this.calculateAmountDue(); // recalculate amount due
+
+                let subTotal = this.calculateSubtotal(newList);
+                if (subTotal !== "CALC_FAILED") {
+                    this.calculateAmountDue(subTotal); // recalculate amount due
+                }
+
             });
         } else {
             // flash message for failure
@@ -339,62 +351,123 @@ class CreateInvoice extends React.Component<Props, State> {
         }
     }
 
-    calculateSubtotal() {
-        // sum the amounts of all invoice items
-
+    newDesc(desc: string, index: number) {
+        // update the description value of invoice item at the given index
         const { items } = this.state;
-        let total = 0.00;
+        let temp = items;
 
         try {
-
-            items.forEach(element => {
-                total += parseFloat(element.price) * parseInt(element.quantity);
+            temp[index].description = desc;
+            this.setState({items: temp}, () => {
+                //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
+                //  use a callback when an action should be performed immediately after setting state.
+                this.handleItemChange(temp);
             });
+        } catch { console.log("error"); }
+    }
 
-            this.setState({subtotal: String( total.toFixed(2) )});
+    newPrice(pr: string, index: number) {
+        // update the price value of invoice item at the given index
+        const { items } = this.state;
+        let temp = items;
 
-        } catch {}
+        try {
+            temp[index].price = pr;
+            this.setState({items: temp}, () => {
+                //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
+                //  use a callback when an action should be performed immediately after setting state.
+                this.handleItemChange(temp);
+            });
+        } catch { console.log("error"); }
+    }
+
+    newQty(qty: string, index: number) {
+        // update the quantity value of invoice item at the given index
+        const { items } = this.state;
+        let temp = items;
+
+        try {
+            temp[index].quantity = qty;
+            this.setState({items: temp}, () => {
+                //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
+                //  use a callback when an action should be performed immediately after setting state.
+                this.handleItemChange(temp);
+            });
+        } catch { console.log("error"); }
     }
 
     handleItemChange(newList: InvoiceItem[]) {
         // update invoice items maintained in state - for calculation purposes
 
         for (let i in newList) {
+
             try {
-                let item = newList[i];
-                item.amount = String( ( parseFloat(item.price) * parseInt(item.quantity) ).toFixed(2) );
-            } catch {}
+                let price = parseFloat(newList[i].price);
+                let quantity = parseInt(newList[i].quantity);
+
+                if ( !isNaN(price) && !isNaN(quantity) ) {
+                    newList[i].amount = String( ( price * quantity ).toFixed(2) );
+                    console.log("price "+price+"* qty "+quantity+"= "+newList[i].amount);
+                }
+            } catch {
+                console.log("error");
+            }
         }
 
-        //console.log(newList);
-        this.setState({ items: newList }, () => {
-            //  NB - setState works in an asynchronous way...this.state variable is not immediately changed.
-            //  use a callback when an action should be performed immediately after setting state.
-            this.calculateSubtotal(); // recalculate subtotal
-            this.calculateAmountDue(); // recalculate amount due
-        });
+        let subTotal = this.calculateSubtotal(newList);
 
+        if (subTotal !== "CALC_FAILED") {
+
+            let amountDue = this.calculateAmountDue(subTotal); // recalculate amount due
+            if (amountDue !== "CALC_FAILED") {
+                this.setState({ items: newList });
+            }
+        }
     }
 
-    calculateAmountDue() {
-        // calculate total amount due by adding tax to the subtotal
+    calculateSubtotal(items: InvoiceItem[]): string {
+        // sum the amounts of all invoice items
 
-        const { items, taxRate } = this.state;
         let total = 0.00;
-        let tax = 0.00;
+
+        items.forEach(element => {
+
+            try {
+                total += parseFloat(element.amount);
+            } catch {
+                total += 0.00;
+            }
+        });
 
         try {
-
-            items.forEach(element => {
-                total += parseFloat(element.amount);
-            });
-
-            tax = total * ( parseFloat(taxRate) );
-            total += tax;
-            this.setState({totalDue: String( total.toFixed(2) )});
-            this.setState({tax: String( tax.toFixed(2) )});
-
+            this.setState({subtotal: String( total.toFixed(2) )});
+            return String( total.toFixed(2) );
         } catch {}
+
+        return "CALC_FAILED"
+    }
+
+    calculateAmountDue(subtotal: string): string {
+        // calculate total amount due by adding tax to the subtotal
+
+        const { taxRate } = this.state;
+
+        try {
+            let subtotalFloat = parseFloat(subtotal);
+            let taxRateFloat = parseFloat(taxRate);
+
+            if ( !isNaN(subtotalFloat) && !isNaN(taxRateFloat) ) {
+                let tax = subtotalFloat * taxRateFloat;
+                let amountDue = subtotalFloat + tax;
+
+                this.setState({totalDue: String( amountDue.toFixed(2) )});
+                this.setState({tax: String( tax.toFixed(2) )});
+                return String( amountDue.toFixed(2) )
+            }
+        } catch {}
+
+        return "CALC_FAILED"
+
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
@@ -419,7 +492,7 @@ class CreateInvoice extends React.Component<Props, State> {
             phoneTo: "",
             emailTo: "",
             formitems: [{
-                description: "",
+                description: "desc",
                 price: "0.00",
                 quantity: "0",
                 amount: "0.00"
@@ -437,109 +510,44 @@ class CreateInvoice extends React.Component<Props, State> {
 
                 {(userReady && currentUser != null) ?
                     <div className="card">
-                        <header className="jumbotron d-flex justify-content-between align-items-center mx-4">
-                            <img
-                              src="https://4m4you.com/wp-content/uploads/2020/06/logo-placeholder-300x120.png"
-                              alt="invoice-logo"
-                              className="invoice-logo mx-4"
-                            />
-                            <h3 className="mx-4"> Invoice </h3>
-                        </header>
-                        <hr className="mb-4 mx-4"/>
-                        <div className="">
+                        <header className="jumbotron d-flex row mx-0 gx-1 px-2 align-items-center">
 
+                            <div className="col-md-6 col-sm-12 px-0 border border-2 rounded-2">
+                                <table className="table table-bordered-dark mb-0">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th> INVOICE # </th>
+                                            <th> DATE </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td> {invoiceNum} </td>
+                                            <td> {invoiceDate} </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </header>
+
+                        <hr className="mb-4 mx-4"/>
+
+                        <div className="">
                             <Formik
                               initialValues={initialValues}
                               validationSchema={this.validationSchema}
                               onSubmit={this.handleSubmit}  // onSubmit function executes if there are no errors
                             >
-                                {({ values, errors, touched, resetForm, isValid, dirty, handleChange, handleBlur }) => (
+                                {({ values, errors, touched, resetForm, isValid, dirty, handleChange, handleBlur, setFieldValue }) => (
                                     <Form>
                                         <div className="row m-0">
                                             <div className="row m-0 col-12">
-                                                <div className = "row mx-0 gx-1 col-md-6 col-sm-12">
 
-                                                    {/* Bill from */}
+                                                {/* Bill to */}
+                                                <div className="row mx-0 gx-1 col-md-6 col-sm-12">
+
                                                     <div className="form-group col-md-12 pb-1">
-                                                        <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
-                                                            <strong className=""> Bill from </strong>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="form-group col-md-12 pb-1 input-group-lg">
-                                                        <Field
-                                                          name="companyFrom"
-                                                          type="text"
-                                                          className={errors.companyFrom && touched.companyFrom ? 'form-control is-invalid' : 'form-control'}
-                                                          placeholder="Company Name"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title={errors.companyFrom && touched.companyFrom ? errors.companyFrom : ''}
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                        <Field
-                                                          name="streetFrom"
-                                                          type="text"
-                                                          className={errors.streetFrom && touched.streetFrom ? 'form-control is-invalid' : 'form-control'}
-                                                          placeholder="Street Address"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title={errors.streetFrom && touched.streetFrom ? errors.streetFrom : ''}
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group col-md-6 pb-1 input-group-sm">
-                                                        <Field
-                                                          name="cityFrom"
-                                                          type="text"
-                                                          className={errors.cityFrom && touched.cityFrom ? 'form-control is-invalid' : 'form-control'}
-                                                          placeholder="City"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title={errors.cityFrom && touched.cityFrom ? errors.cityFrom : ''}
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group col-md-4 pb-1 input-group-sm">
-                                                        <Field
-                                                          name="stateFrom"
-                                                          type="text"
-                                                          className={errors.stateFrom && touched.stateFrom ? 'form-control is-invalid' : 'form-control'}
-                                                          placeholder="State"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title={errors.stateFrom && touched.stateFrom ? errors.stateFrom : ''}
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group col-md-2 pb-1 input-group-sm">
-                                                        <Field
-                                                          name="zipFrom"
-                                                          type="text"
-                                                          className={errors.zipFrom && touched.zipFrom ? 'form-control is-invalid' : 'form-control'}
-                                                          placeholder="Zip"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title={errors.zipFrom && touched.zipFrom ? errors.zipFrom : ''}
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
-                                                        <Field
-                                                          name="phoneFrom"
-                                                          type="text"
-                                                          className={errors.phoneFrom && touched.phoneFrom ? 'form-control is-invalid' : 'form-control'}
-                                                          placeholder="Phone"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title={errors.phoneFrom && touched.phoneFrom ? errors.phoneFrom : ''}
-                                                        />
-                                                    </div>
-
-                                                    {/* Bill to */}
-                                                    <div className="form-group col-md-12 pb-1 mt-4">
                                                         <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
                                                             <strong className=""> Bill to </strong>
                                                         </div>
@@ -640,28 +648,90 @@ class CreateInvoice extends React.Component<Props, State> {
                                                           title={errors.emailTo && touched.emailTo ? errors.emailTo : ''}
                                                         />
                                                     </div>
-
                                                 </div>
 
-                                                <div className = "col-md-6 col-sm-12 px-0 ">
-                                                    <div className="border border-2 rounded-2 mx-2">
-                                                        <table className="table table-bordered-dark mb-0">
-                                                            <thead className="table-light">
-                                                                <tr>
-                                                                    <th> INVOICE # </th>
-                                                                    <th> DATE </th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td> {invoiceNum} </td>
-                                                                    <td> {invoiceDate} </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
+                                                {/* Bill from */}
+                                                <div className="row mx-0 gx-1 col-md-6 col-sm-12">
+
+                                                    <div className="form-group col-md-12 pb-1">
+                                                        <div className=" form-control col-md-12 border border-2 rounded-2 bg-light py-2">
+                                                            <strong className=""> Bill from </strong>
+                                                        </div>
                                                     </div>
-                                                </div>
 
+                                                    <div className="form-group col-md-12 pb-1 input-group-lg">
+                                                        <Field
+                                                          name="companyFrom"
+                                                          type="text"
+                                                          className={errors.companyFrom && touched.companyFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Company Name"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.companyFrom && touched.companyFrom ? errors.companyFrom : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="streetFrom"
+                                                          type="text"
+                                                          className={errors.streetFrom && touched.streetFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Street Address"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.streetFrom && touched.streetFrom ? errors.streetFrom : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-6 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="cityFrom"
+                                                          type="text"
+                                                          className={errors.cityFrom && touched.cityFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="City"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.cityFrom && touched.cityFrom ? errors.cityFrom : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-4 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="stateFrom"
+                                                          type="text"
+                                                          className={errors.stateFrom && touched.stateFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="State"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.stateFrom && touched.stateFrom ? errors.stateFrom : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-2 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="zipFrom"
+                                                          type="text"
+                                                          className={errors.zipFrom && touched.zipFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Zip"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.zipFrom && touched.zipFrom ? errors.zipFrom : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group col-md-12 pb-1 input-group-sm">
+                                                        <Field
+                                                          name="phoneFrom"
+                                                          type="text"
+                                                          className={errors.phoneFrom && touched.phoneFrom ? 'form-control is-invalid' : 'form-control'}
+                                                          placeholder="Phone"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title={errors.phoneFrom && touched.phoneFrom ? errors.phoneFrom : ''}
+                                                        />
+                                                    </div>
+
+                                                </div>
 
                                                 <FieldArray
                                                     name="formitems"
@@ -693,8 +763,10 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                           data-bs-placement="top"
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? (errors.formitems[index] as InvoiceItem).description : ''}
                                                                           onChange={ (e: React.FormEvent<HTMLInputElement>) => {
-                                                                            handleChange(e)
-                                                                            this.handleItemChange(values.formitems)
+                                                                            handleChange(e);
+                                                                            this.newDesc(e.currentTarget.value, index);
+                                                                            //setFieldValue(`formitems.${index}.description`, e.currentTarget.value);
+                                                                            //console.log(values.formitems[index].description);
                                                                           }}
                                                                           //onBlur={handleBlur}
                                                                         />
@@ -708,8 +780,8 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                           data-bs-placement="top"
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? (errors.formitems[index] as InvoiceItem).price : ''}
                                                                           onChange={ (e: React.FormEvent<HTMLInputElement>) => {
-                                                                            handleChange(e)
-                                                                            this.handleItemChange(values.formitems)
+                                                                            handleChange(e);
+                                                                            this.newPrice(e.currentTarget.value, index);
                                                                           }}
                                                                         />
                                                                     </div>
@@ -722,8 +794,8 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                           data-bs-placement="top"
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? (errors.formitems[index] as InvoiceItem).quantity : ''}
                                                                           onChange={ (e: React.FormEvent<HTMLInputElement>) => {
-                                                                            handleChange(e)
-                                                                            this.handleItemChange(values.formitems)
+                                                                            handleChange(e);
+                                                                            this.newQty(e.currentTarget.value, index);
                                                                           }}
                                                                         />
                                                                     </div>
@@ -740,7 +812,9 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                       type="button"
                                                                       id="delete-item-btn"
                                                                       className="btn p-0"
-                                                                      onClick={() => {  values.formitems.length <= 1 ? console.log("") :  remove(index); this.removeItem(index) } }
+                                                                      onClick={() => {
+                                                                        values.formitems.length <= 1 ? console.log("") :  remove(index); this.removeItem(index)
+                                                                      }}
                                                                     >
                                                                         <i className="bi bi-trash align-self-center fs-5"></i>
                                                                     </button>
@@ -761,7 +835,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                     name="comments"
                                                                     className="form-control input-group-sm"
                                                                 />
-                                                                {/* <textarea name="comments" className="form-control input-group-sm"/> */}
+
                                                             </div>
 
                                                             {/* invoice summaries */}
@@ -805,7 +879,12 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                   type="button"
                                                                   id="invoice-add-item-btn"
                                                                   className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
-                                                                  onClick={() => { push( { description: "", price: "0.00", quantity: "0", amount: "0.00"} ); this.addItem() } }
+                                                                  onClick={() => {
+                                                                    this.addItem();
+                                                                    //push( { description: "desc", price: "0.00", quantity: "0", amount: "0.00"} as InvoiceItem );
+                                                                    push( { description: "desc", price: "0.00", quantity: "0", amount: "0.00"} as InvoiceItem );
+                                                                    console.log(values.formitems);
+                                                                  }}
                                                                 >
                                                                     <i className="bi bi-plus-circle align-self-center"></i>
                                                                     <span className="mx-1"></span>

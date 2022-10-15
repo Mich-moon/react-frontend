@@ -95,17 +95,16 @@ class Login extends React.Component<Props, State> {
               <div className="col-md-12">
 
                   <div className="card card-container">
-                      <img
-                          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
-                          alt="profile-img"
-                          className="profile-img-card"
-                      />
+
+                      <h3>Login</h3>
+                      <span className="mb-4"></span>
+
                       <Formik
                           initialValues={initialValues}
                           validationSchema={this.validationSchema}
                           onSubmit={this.handleLogin}
                       >
-                          <Form>
+                          <Form className="text-start">
                               <div className="form-group">
                                   <label htmlFor="email">Email</label>
                                   <Field name="email" type="text" className="form-control" />
@@ -125,7 +124,7 @@ class Login extends React.Component<Props, State> {
                                   />
                               </div>
                               <div className="form-group">
-                                  <button type="submit" className="btn btn-primary btn-block mt-4" disabled={loading}>
+                                  <button type="submit" className="btn btn-primary btn-block my-4 w-100" disabled={loading}>
 
                                       {/* loading circle animation */}
                                       {loading && (

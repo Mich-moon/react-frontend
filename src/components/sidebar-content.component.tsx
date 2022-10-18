@@ -99,7 +99,7 @@ class SidebarContent extends React.Component<Props, State> {
                     <div className="navbar-nav mr-auto" style={styles.sidebarLink}>
 
                         <li
-                            className={`nav-item px-2 ${activeItem === "home" && 'sidebar-active'}`}
+                            className={`nav-item side-item px-2 ${activeItem === "home" && 'sidebar-active'}`}
                             onClick={() => this.setState({activeItem: "home"})}
                         >
                             <Link to={"/home"} className="nav-link">
@@ -111,7 +111,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {showModeratorBoard && (
                             <li
-                                className={`nav-item px-2 ${activeItem === "invoices" && 'sidebar-active'}`}
+                                className={`nav-item side-item px-2 ${activeItem === "invoices" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "invoices"})}
                             >
                                 <Link to={"/mod"} className="nav-link">
@@ -124,7 +124,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {showAdminBoard && (
                             <li
-                                className={`nav-item px-2 ${activeItem === "members" && 'sidebar-active'}`}
+                                className={`nav-item side-item px-2 ${activeItem === "members" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "members"})}
                             >
                                 <Link to={"/admin"} className="nav-link">
@@ -137,7 +137,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {currentUser && (
                             <li
-                                className={`nav-item px-2 ${activeItem === "dashboard" && 'sidebar-active'}`}
+                                className={`nav-item side-item px-2 ${activeItem === "dashboard" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "dashboard"})}
                             >
                                 <Link to={"/user"} className="nav-link">
@@ -150,7 +150,7 @@ class SidebarContent extends React.Component<Props, State> {
 
                         {currentUser && (
                             <li
-                                className={`nav-item px-2 ${activeItem === "settings" && 'sidebar-active'}`}
+                                className={`nav-item side-item px-2 ${activeItem === "settings" && 'sidebar-active'}`}
                                 onClick={() => this.setState({activeItem: "settings"})}
                            >
                                 <Link to={"/settings"} className="nav-link">

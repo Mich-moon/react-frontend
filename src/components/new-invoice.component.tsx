@@ -17,7 +17,7 @@ import { withRouter, WithRouterProps } from './withRouter';
 // types and interfaces
 import { Role } from '../types/role.type'
 import { IUser } from '../types/user.type'
-import { InvoiceItem } from '../types/invoice.type'
+import { InvoiceItem, InvoiceItemUnique } from '../types/invoice.type'
 
 
 // types for the component props
@@ -32,7 +32,8 @@ type State = {
     flash: boolean,
     flashMessage: string,
     flashType: Color,
-    items: InvoiceItem[],
+    items: InvoiceItemUnique[],
+    lastItemID: number,
     subtotal: string,
     tax: string,
     taxRate: string,
@@ -41,7 +42,7 @@ type State = {
     invoiceDate: string,
 
     /* Indicates whether invoice data should be saved as pending (not a draft) */
-    save: boolean
+    saveAsPending: boolean
 };
 
 class CreateInvoice extends React.Component<Props, State> {
@@ -59,18 +60,20 @@ class CreateInvoice extends React.Component<Props, State> {
             flashMessage: "",
             flashType: "info",
             items: [{
+                id: 0,
                 description: "",
                 price: "0.00",
                 quantity: "0",
                 amount: "0.00"
-            } as InvoiceItem],
+            } as InvoiceItemUnique],
+            lastItemID: 0,
             subtotal: "0.00",
             tax: "0.00",
             taxRate: "0.00",
             totalDue: "0.00",
             invoiceNum: "0000",
             invoiceDate: "00-00-0000",
-            save: false
+            saveAsPending: false
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
@@ -188,7 +191,7 @@ class CreateInvoice extends React.Component<Props, State> {
                 nameTo, companyTo, streetTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
                 comments } = formValue; // get data from form
 
-        const { items, currentUser, save,
+        const { items, currentUser, saveAsPending,
                subtotal, tax, taxRate, totalDue } = this.state;
 
         this.setState({ loading: true });
@@ -203,18 +206,22 @@ class CreateInvoice extends React.Component<Props, State> {
             .then(
                 response => { // creation successful
 
-                    this.setState({
-                        flash: true,
-                        //flashMessage: response.data.message,
-                        flashMessage: "Invoice saved successfully!",
-                        flashType: "success",
-                        loading: false,
-                        invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
-                    });
+                    if (saveAsPending) {
 
-                    if (save) {
-                        this.invoiceStatusToPending();
+                        this.invoiceStatusToPending(response.data.invoice.id);
+
+                    } else {
+
+                        this.setState({
+                            flash: true,
+                            flashMessage: "Invoice saved successfully  as DRAFT!",
+                            flashType: "success",
+                            loading: false,
+                            saveAsPending: false,
+                            invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
+                        });
                     }
+
                 },
                 error => { // creation not successful
 
@@ -243,87 +250,71 @@ class CreateInvoice extends React.Component<Props, State> {
         }
     }
 
-    invoiceStatusToPending() {
+    invoiceStatusToPending(id: number){
         // change the invoice's status to invoiceStatusToPending
 
-        const { invoiceNum } = this.state;
-        let id = parseInt(invoiceNum);
+        InvoiceService.updateInvoiceStatus(id, "pending")
+        .then(
+            response => { // status update successful
 
-        if (!Number.isNaN( id )) {
+                this.setState({
+                    flash: true,
+                    flashMessage: "Invoice saved successfully as PENDING!",
+                    flashType: "success",
+                    loading: false,
+                    invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
+                });
+            },
+            error => { // update not successful
 
-            InvoiceService.updateInvoiceStatus(id, "pending")
-            .then(
-                response => { // status update successful
+                const resMessage =
+                    (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                    error.message ||
+                    error.toString();
 
-                    this.setState({
-                        flash: true,
-                        //flashMessage: response.data.message,
-                        flashMessage: "Invoice created successfully!",
-                        flashType: "success",
-                        loading: false,
-                        save: false
-                    });
-                },
-                error => { // update not successful
+                this.setState({
+                    flash: true,
+                    flashMessage: "Error: failed to save DRAFT as PENDING",
+                    flashType: "error",
+                    loading: false,
+                    saveAsPending: false
+                });
 
-                    const resMessage =
-                        (error.response &&
-                        error.response.data &&
-                        error.response.data.message) ||
-                        error.message ||
-                        error.toString();
-
-                    console.log("Failed - " + resMessage);
-                    this.setState({ save: false })
-                    /*this.setState({
-                        flash: true,
-                        flashMessage: resMessage,
-                        flashType: "error",
-                        loading: false
-                    });*/
-                }
-            );
-
-        } else {
-            this.setState({
-                flash: true,
-                flashMessage: "Oops! something went wrong",
-                flashType: "error",
-                loading: false
-            });
-        }
-
-        // set timer on flash message
-        setTimeout(() => {
-            this.setState({ flash: false, flashMessage: ""});
-        }, 5000);
+                console.log("Failed");
+                console.log(resMessage);
+            }
+        );
 
     }
 
-    addItem() {
-        // add a new item to the invoice
+    addItem(): InvoiceItemUnique[] {
+        // add a new item to the invoice and return the result
 
-        const { items } = this.state;
+        const { items, lastItemID } = this.state;
         const newList = items.concat({
+            id: lastItemID + 1,
             description: "",
             price: "0.00",
             quantity: "0",
             amount: "0.00"
         });
 
-        this.setState({ items: newList });
-        console.log("addItem");
+        this.setState({ items: newList, lastItemID: lastItemID + 1 });
+        console.log("addItem()");
         console.log(newList);
+        return newList
     }
 
-    removeItem(index: number) {
-        // remove an item from the invoice
+    removeItem(index: number): InvoiceItemUnique[] {
+        // remove an item from the invoice and return the result
 
         const { items } = this.state;
 
         if (items.length !== 1) {
             const newList = items.filter((item, j) => index !== j);
-            console.log("new list");
+            console.log("removeItem()");
             console.log(newList);
 
             this.setState({ items: newList }, () => {
@@ -336,6 +327,8 @@ class CreateInvoice extends React.Component<Props, State> {
                 }
 
             });
+            return newList
+
         } else {
             // flash message for failure
             this.setState({
@@ -348,6 +341,8 @@ class CreateInvoice extends React.Component<Props, State> {
             setTimeout(() => {
                 this.setState({ flash: false, flashMessage: "" });
             }, 5000);
+
+            return []
         }
     }
 
@@ -396,7 +391,7 @@ class CreateInvoice extends React.Component<Props, State> {
         } catch { console.log("error"); }
     }
 
-    handleItemChange(newList: InvoiceItem[]) {
+    handleItemChange(newList: InvoiceItemUnique[]) {
         // update invoice items maintained in state - for calculation purposes
 
         for (let i in newList) {
@@ -474,9 +469,7 @@ class CreateInvoice extends React.Component<Props, State> {
     render() {
 
         const { userReady, currentUser, loading, flash, flashMessage, flashType,
-                items, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
-
-        const newItem = { description: "", price: "0.00", quantity: "0", amount: "0.00"} as InvoiceItem;
+                items, lastItemID, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
         const initialValues = {
             companyFrom: "",
@@ -539,6 +532,16 @@ class CreateInvoice extends React.Component<Props, State> {
                             >
                                 {({ values, errors, touched, resetForm, isValid, dirty, handleChange, handleBlur, setFieldValue }) => (
                                     <Form>
+
+                                        {/* loading spinner */}
+                                        <div className={loading ? "overlay" : "overlay d-none"} id="loading" >
+                                            <div className="d-flex justify-content-center">
+                                                <div className="spinner-border" role="status">
+                                                    <span className="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="row m-0">
                                             <div className="row m-0 col-12">
 
@@ -750,13 +753,14 @@ class CreateInvoice extends React.Component<Props, State> {
                                                             </div>
 
                                                             {/* {values.formitems && values.formitems.map( (item: InvoiceItem, index: number) => */}
-                                                            {values.formitems && items && items.map( (item: InvoiceItem, index: number) =>
+                                                            {values.formitems && items && items.map( (item: InvoiceItemUnique, index: number) =>
 
-                                                                <div key={index} className="col-12 d-flex hover-shadow mb-1">
+                                                                <div key={item.id} className="col-12 d-flex hover-shadow mb-1">
                                                                     <div className="input-group-sm col-5">
                                                                         <Field
-                                                                          name={`formitems.${index}.description`}
+                                                                          name={`formitems.${item.id}.description`}
                                                                           value={items[index].description}
+                                                                          //value={items[ items.findIndex(x => x.id === item.id) ].description}
                                                                           type="text"
                                                                           className={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                           data-bs-toggle="tooltip"
@@ -764,7 +768,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? (errors.formitems[index] as InvoiceItem).description : ''}
                                                                           onChange={ (e: React.FormEvent<HTMLInputElement>) => {
                                                                             handleChange(e);
-                                                                            this.newDesc(e.currentTarget.value, index);
+                                                                            this.newDesc(e.currentTarget.value, items.findIndex(x => x.id === item.id));
                                                                             //setFieldValue(`formitems.${index}.description`, e.currentTarget.value);
                                                                             //console.log(values.formitems[index].description);
                                                                           }}
@@ -775,6 +779,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                         <Field
                                                                           name={`formitems.${index}.price`}
                                                                           value={items[index].price}
+                                                                          //value={items[ items.findIndex(x => x.id === item.id) ].price}
                                                                           type="text"
                                                                           className={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                           data-bs-toggle="tooltip"
@@ -782,7 +787,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? (errors.formitems[index] as InvoiceItem).price : ''}
                                                                           onChange={ (e: React.FormEvent<HTMLInputElement>) => {
                                                                             handleChange(e);
-                                                                            this.newPrice(e.currentTarget.value, index);
+                                                                            this.newPrice(e.currentTarget.value, items.findIndex(x => x.id === item.id));
                                                                           }}
                                                                         />
                                                                     </div>
@@ -790,6 +795,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                         <Field
                                                                           name={`formitems.${index}.quantity`}
                                                                           value={items[index].quantity}
+                                                                          //value={items[ items.findIndex(x => x.id === item.id) ].quantity}
                                                                           type="text"
                                                                           className={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                           data-bs-toggle="tooltip"
@@ -797,7 +803,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                           title={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? (errors.formitems[index] as InvoiceItem).quantity : ''}
                                                                           onChange={ (e: React.FormEvent<HTMLInputElement>) => {
                                                                             handleChange(e);
-                                                                            this.newQty(e.currentTarget.value, index);
+                                                                            this.newQty(e.currentTarget.value, items.findIndex(x => x.id === item.id));
                                                                           }}
                                                                         />
                                                                     </div>
@@ -805,6 +811,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                         <Field
                                                                           name={`formitems.${index}.amount`}
                                                                           value={items[index].amount}
+                                                                          //value={items[ items.findIndex(x => x.id === item.id) ].amount}
                                                                           type="text"
                                                                           className={errors.formitems && (errors.formitems[index] as InvoiceItem).amount && touched.formitems && touched.formitems[index].amount ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                           data-bs-toggle="tooltip"
@@ -818,7 +825,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                       id="delete-item-btn"
                                                                       className="btn p-0"
                                                                       onClick={() => {
-                                                                        values.formitems.length <= 1 ? console.log("") :  remove(index); this.removeItem(index)
+                                                                        values.formitems.length <= 1 ? console.log("") :  /*remove( index );*/ values.formitems = this.removeItem( items.findIndex(x => x.id === item.id) ); console.log(values.formitems);
                                                                       }}
                                                                     >
                                                                         <i className="bi bi-trash align-self-center fs-5"></i>
@@ -885,8 +892,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                                   id="invoice-add-item-btn"
                                                                   className="btn btn-sm btn-primary rounded-pill px-4 py-2 col-md-4 col-sm-8 my-auto"
                                                                   onClick={ () => {
-                                                                    values.formitems = items.concat( newItem );
-                                                                    this.addItem();
+                                                                    values.formitems = this.addItem();
                                                                     //push( newItem );
                                                                     console.log(values.formitems);
                                                                   }}
@@ -934,7 +940,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                         <button
                                                           type="button"
                                                           id="invoice-save-btn"
-                                                          onClick={() => { this.setState({ save: true  }, () => { this.handleSubmit(values) } ); }}
+                                                          onClick={() => { this.setState({ saveAsPending: true  }, () => { this.handleSubmit(values) } ); }}
                                                           className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
                                                           disabled={!(isValid && dirty)}
                                                         >
@@ -962,4 +968,3 @@ class CreateInvoice extends React.Component<Props, State> {
 }
 
 export default withRouter(CreateInvoice)
-

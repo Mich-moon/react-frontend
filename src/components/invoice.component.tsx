@@ -21,7 +21,7 @@ import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
 import { InvoiceItem } from '../types/invoice.type'
-import { InvoiceData } from '../types/invoice.type'
+import { InvoiceData, InvoiceItemUnique } from '../types/invoice.type'
 import { IStatus } from '../types/invoice.type'
 
 import { Role } from '../types/role.type'
@@ -236,7 +236,7 @@ class Invoices extends React.Component<Props, State> {
                         <div>
                             <span className="mx-4"> Filter by status </span>
 
-                            <Link to={`/newinvoice`} className="btn btn-sm btn-info admin-action rounded-pill px-4 py-2">
+                            <Link to={`/newinvoice`} className="btn btn-sm btn-info custom-mr-10 rounded-pill px-4 py-2">
                                 <i className="bi bi-plus-circle-fill text-white align-self-center"></i>
                                 <span className="mx-1"></span>
                                 <span className="align-self-center"> New Invoice </span>
@@ -253,6 +253,7 @@ class Invoices extends React.Component<Props, State> {
                         <div className="mt-4">
 
                             {invoices.map( (invoice: InvoiceData, index: number) =>
+
                                 <div key={invoice.id} className="card hover-shadow">
                                     <div className="d-flex row justify-content-between">
 

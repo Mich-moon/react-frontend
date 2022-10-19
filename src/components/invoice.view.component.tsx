@@ -15,7 +15,7 @@ import { withRouter, WithRouterProps } from './withRouter';
 // types and interfaces
 import { Role } from '../types/role.type'
 import { IUser } from '../types/user.type'
-import { InvoiceData, InvoiceItem } from '../types/invoice.type'
+import { InvoiceData, InvoiceItemUnique } from '../types/invoice.type'
 
 
 // types for the component props
@@ -73,7 +73,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
         //console.log(this.props);
 
         let invoiceID;
-        if (this.props.invid != "#") { // id NOT provided in url
+        if (this.props.invid !== "#") { // id NOT provided in url
             invoiceID = parseInt(invid); // get id from props
 
         } else { // id provided in the url
@@ -381,9 +381,9 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                                         <strong className="col-3"> Amount </strong>
                                                     </div>
 
-                                                    {invoice && invoice.items != null && invoice.items.map( (item: InvoiceItem, index: number) =>
+                                                    {invoice && invoice.items != null && invoice.items.map( (item: InvoiceItemUnique) =>
 
-                                                        <div key={index} className="col-12 d-flex d-print-flex py-2 border-bottom border-2">
+                                                        <div key={item.id} className="col-12 d-flex d-print-flex py-2 border-bottom border-2">
                                                             <div className="col-5">
                                                                 <span className="text-start">
                                                                     {item.description}

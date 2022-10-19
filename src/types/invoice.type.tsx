@@ -14,6 +14,23 @@ export type InvoiceItem = {
     amount: string
 };
 
+export type InvoiceItemUnique = {
+    /** unique identification */
+    id: number,
+
+    /** words used to identify the item */
+    description: string,
+
+    /** the currency value of the item */
+    price: string,
+
+    /** how much of the item required */
+    quantity: string,
+
+    /** price multiplied by quantity */
+    amount: string
+};
+
 export type Invoice = {
     /** Name of company being billed */
     companyFrom: string,
@@ -129,7 +146,7 @@ export type InvoiceData = {
     emailTo: string,
 
     /** list of items for the invoice */
-    items: InvoiceItem[],
+    items: InvoiceItemUnique[],
 
     /** additional words to be considered */
     comments: string,

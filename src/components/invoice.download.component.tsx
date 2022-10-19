@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { InvoiceData, InvoiceItem } from '../types/invoice.type'
+import { InvoiceData, InvoiceItemUnique } from '../types/invoice.type'
 
 // types for the component props
 type Props = {
@@ -243,9 +243,9 @@ class Test extends React.Component <Props, State>{
                                                         </div>
                                                     </div>
 
-                                                    {invoice && invoice.items != null && invoice.items.map( (item: InvoiceItem, index: number) =>
+                                                    {invoice && invoice.items != null && invoice.items.map( (item: InvoiceItemUnique) =>
 
-                                                        <div key={index} className="col-12 d-flex mb-1">
+                                                        <div key={item.id} className="col-12 d-flex mb-1">
                                                             <div className="input-group-sm col-5">
                                                                 <input
                                                                   type="text"

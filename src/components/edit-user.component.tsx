@@ -7,6 +7,8 @@ import * as Yup from "yup";
 import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
 import Fade from '@material-ui/core/Fade';   // for flash message fade
 
+import ReactModal from 'react-modal';  // for modal
+
 import AuthService from "../services/AuthService";
 import UserService from "../services/UserService";
 
@@ -49,6 +51,12 @@ type State = {
     /** type of flash message */
     flashType: Color,
 
+    /** Whether modal should be displayed */
+    modal: boolean,
+
+    /** Message to be displayed by the modal */
+    modalMessage: string,
+
     /** for storing result of re-login after updates*/
     login_state: boolean
 
@@ -72,6 +80,8 @@ class EditUser extends React.Component<Props, State> {
             flash: false,
             flashMessage: "",
             flashType: "info",
+            modal: false,
+            modalMessage: "",
             login_state: false
         };
 
@@ -203,6 +213,7 @@ class EditUser extends React.Component<Props, State> {
     }
 
     handleBioEdit(formValue: { id: number; firstname: string; lastname: string; email: string; bio_password:string }) {
+        // uses information from general info edit form to update user's general info
 
         // handle data from bio form submission
         const { id, firstname, lastname, email, bio_password } = formValue; // get data from form
@@ -237,6 +248,7 @@ class EditUser extends React.Component<Props, State> {
     }
 
     handlePasswordEdit(formValue: { email: string; password: string; newPassword: string }) {
+        // uses information from password edit form to update user's password
 
         // handle data from form submission
         const { email, password, newPassword } = formValue; // get data from form
@@ -270,6 +282,7 @@ class EditUser extends React.Component<Props, State> {
     }
 
     updateUser(id: number, firstName: string, lastName: string, email: string, password: string, roles: Role[]) {
+        // updates details of the user being viewed with information provided
 
         UserService.updateUser(
             id,
@@ -374,6 +387,7 @@ class EditUser extends React.Component<Props, State> {
     }
 
     removeRole(role: Role) {
+        // removes a given role from the roles of the user being viewed
 
         const { viewedUser, appRoles } = this.state;
 
@@ -382,24 +396,23 @@ class EditUser extends React.Component<Props, State> {
                 loading_role: true
             });
 
-            console.log(role);
-            console.log(viewedUser.roles.findIndex(x => x.name === role.name));
-            const index = viewedUser.roles.findIndex(x => x.name === role.name);
-            if (index !== -1) {
+            const newRoles = viewedUser.roles.filter((item, j) => role.id !== item.id);
+            //console.log(role);
+            //console.log(newRoles);
 
-                this.updateUser(
-                    viewedUser.id,
-                    viewedUser.firstName,
-                    viewedUser.lastName,
-                    viewedUser.email,
-                    viewedUser.password,
-                    viewedUser.roles.splice( index, 1 )
-                );
-            }
+            this.updateUser(
+                viewedUser.id,
+                viewedUser.firstName,
+                viewedUser.lastName,
+                viewedUser.email,
+                viewedUser.password,
+                newRoles
+            );
         }
     }
 
     addRole(role: Role) {
+        // adds a given role to the roles of the user being viewed
 
         const { viewedUser } = this.state;
 
@@ -420,6 +433,8 @@ class EditUser extends React.Component<Props, State> {
     }
 
     isFound(roles: Role[], role: string): boolean {
+        // checks if a given role name is found in an array of roles
+        //  and returns the result
 
         const result = roles.some(element => {
             if (element.name === role) {
@@ -427,6 +442,7 @@ class EditUser extends React.Component<Props, State> {
             }
             return false;
         })
+
         return result;
     }
 
@@ -663,7 +679,7 @@ class EditUser extends React.Component<Props, State> {
                                             <td>
                                                 <button
                                                   type="button"
-                                                  className="btn btn-sm btn-primary admin-action"
+                                                  className="btn btn-sm btn-primary custom-mr-10"
                                                   disabled={ this.isFound(viewedUser.roles, role.name) }
                                                   onClick={() => this.addRole(role)}
                                                 >
@@ -672,7 +688,7 @@ class EditUser extends React.Component<Props, State> {
 
                                                 <button
                                                   type="button"
-                                                  className="btn btn-sm btn-danger admin-action"
+                                                  className="btn btn-sm btn-danger custom-mr-10"
                                                   disabled={ !this.isFound(viewedUser.roles, role.name) }
                                                   onClick={() => this.removeRole(role)}
                                                 >

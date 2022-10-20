@@ -45,6 +45,7 @@ type State = {
     saveAsPending: boolean
 };
 
+
 class CreateInvoice extends React.Component<Props, State> {
 
     // constructor() - is invoked before the component is mounted.
@@ -534,7 +535,10 @@ class CreateInvoice extends React.Component<Props, State> {
                                     <Form>
 
                                         {/* loading spinner */}
-                                        <div className={loading ? "overlay" : "overlay d-none"} id="loading" >
+                                        <div
+                                            className={!loading ? "overlay" : "overlay d-none"}
+                                            id="loading"
+                                        >
                                             <div className="d-flex justify-content-center">
                                                 <div className="spinner-border" role="status">
                                                     <span className="visually-hidden">Loading...</span>

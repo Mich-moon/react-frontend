@@ -37,9 +37,6 @@ class AuthService {
         .post(API_URL + "mock-login", {
             email,
             password
-        })
-        .then(response => {
-            return response.data;
         });
     }
 

@@ -59,6 +59,10 @@ class UserService {
             roles: u_roles
         });
     }
+
+    updateUserPassword(u_id: number, newPassword: string) {
+        return axiosInstance.put(USERS_REST_API_URL + "newpassword/" + u_id, {newPassword} );
+    }
 }
 
 export default new UserService();

@@ -57,8 +57,11 @@ type State = {
     /** Message to be displayed by the modal */
     modalMessage: string,
 
-    /** for storing result of re-login after updates*/
-    login_state: boolean
+    /** Indicates what function should be called on modal confirmation */
+    modalAction: string,
+
+    /** Object of type Role to be used for updating a user's roles */
+    updateRole: Role | null
 
 };
 
@@ -82,7 +85,8 @@ class EditUser extends React.Component<Props, State> {
             flashType: "info",
             modal: false,
             modalMessage: "",
-            login_state: false
+            modalAction: "",
+            updateRole: null
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
@@ -139,7 +143,7 @@ class EditUser extends React.Component<Props, State> {
         UserService.getUser(userID).then((response) => {
 
             this.setState({ viewedUser: response.data.user })
-            console.log(response.data.user);
+            //console.log(response.data.user);
 
         }).catch((error) => {
             navigate("/home"); // redirect to home page
@@ -184,8 +188,6 @@ class EditUser extends React.Component<Props, State> {
 
          // create schema for validation
          return Yup.object().shape({
-             email: Yup.string()
-                 .required("This field is required!"),
              password: Yup.string()
                  .test(
                     "len",
@@ -212,10 +214,9 @@ class EditUser extends React.Component<Props, State> {
         });
     }
 
-    handleBioEdit(formValue: { id: number; firstname: string; lastname: string; email: string; bio_password:string }) {
+    async handleBioEdit(formValue: { id: number; firstname: string; lastname: string; email: string; bio_password:string }) {
         // uses information from general info edit form to update user's general info
 
-        // handle data from bio form submission
         const { id, firstname, lastname, email, bio_password } = formValue; // get data from form
 
         const { viewedUser, currentUser } = this.state;
@@ -225,33 +226,45 @@ class EditUser extends React.Component<Props, State> {
                 loading_bio: true // start loading button animation
             });
 
-            //console.log("check " + this.login(viewedUser.email, bio_password));
-            if (this.mockLogin(currentUser.email, bio_password)) { // re-login (current user's credentials) successful
+            if (await this.mockLogin(currentUser.email, bio_password)) { // re-login (current user's credentials) successful
 
                 this.updateUser(
                     id,
                     firstname,
                     lastname,
                     email,
-                    bio_password,
+                    "NA",
                     viewedUser.roles
                 );
 
-                this.login(currentUser.email, bio_password);  // log in user to continue their session
-            }
+                if (currentUser.id === viewedUser.id ) {
+                    this.login(currentUser.email, bio_password);  // log in user to continue their session
+                }
 
-            this.setState({
-                loading_bio: false // stop loading button animation
-            });
+            } else { // current user's login failed
+
+                this.setState({
+                    flash: true,
+                    flashMessage: "Confirmation failed: Invalid user credentials",
+                    flashType: "error"
+                });
+
+                // set timer on flash message
+                setTimeout(() => {
+                    this.setState({ flash: false, flashMessage: ""});
+                }, 5000);
+            }
         }
 
+        this.setState({
+            loading_bio: false // stop loading button animation
+        });
     }
 
-    handlePasswordEdit(formValue: { email: string; password: string; newPassword: string }) {
+    async handlePasswordEdit(formValue: { password: string; newPassword: string }) {
         // uses information from password edit form to update user's password
 
-        // handle data from form submission
-        const { email, password, newPassword } = formValue; // get data from form
+        const { password, newPassword } = formValue; // get data from form
 
         const { viewedUser, currentUser } = this.state;
 
@@ -261,24 +274,63 @@ class EditUser extends React.Component<Props, State> {
                 loading_password: true // start loading button animation
             });
 
-            if (this.mockLogin(email, password)) { // re-login (current user's credentials) successful
+            if (await this.mockLogin(currentUser.email, password)) { // re-login (current user's credentials) successful
+                console.log("SUCCESS");
 
-                this.updateUser(
-                    viewedUser.id,
-                    viewedUser.firstName,
-                    viewedUser.lastName,
-                    viewedUser.email,
-                    newPassword,
-                    viewedUser.roles
+                UserService.updateUserPassword( viewedUser.id, newPassword )
+                .then(
+                    response => { // update successful
+
+                        this.getUser(); // re-fetch user's details from database
+
+                        this.setState({
+                            flash: true,
+                            flashMessage: response.data.message,
+                            flashType: "success"
+                        });
+
+                    },
+                    error => { // update not successful
+                        const resMessage =
+                            (error.response &&
+                            error.response.data &&
+                            error.response.data.message) ||
+                            error.message ||
+                            error.toString();
+
+                        this.setState({
+                            flash: true,
+                            flashMessage: resMessage,
+                            flashType: "error"
+                        });
+
+                        console.log(resMessage);
+                    }
                 );
 
-                this.login(email, password);  // log in user to continue their session
+                if (currentUser.id === viewedUser.id ) {
+                    this.login(currentUser.email, newPassword);  // log in user to continue their session
+                }
+
+            } else { // current user's login failed
+
+                this.setState({
+                    flash: true,
+                    flashMessage: "Confirmation failed: Invalid user credentials",
+                    flashType: "error"
+                });
             }
 
-            this.setState({
-                loading_password: false // stop loading button animation
-            });
+            // set timer on flash message
+            setTimeout(() => {
+                this.setState({ flash: false, flashMessage: ""});
+            }, 5000);
+
         }
+
+        this.setState({
+            loading_password: false // stop loading button animation
+        });
     }
 
     updateUser(id: number, firstName: string, lastName: string, email: string, password: string, roles: Role[]) {
@@ -324,18 +376,13 @@ class EditUser extends React.Component<Props, State> {
         }, 5000);
     }
 
-    mockLogin = (email: string, password: string): boolean => {
+    mockLogin(email: string, password: string): Promise<boolean> {
         // checks if login with email and password would be successful
 
-        const { login_state } = this.state;
-        this.setState({ login_state: false});
-
-        AuthService.mockLogin(email, password)
+        let result = AuthService.mockLogin(email, password)
         .then(
-
-            () => { // validation ok
-                //console.log("re-login success");
-                this.setState({ login_state: true});
+            response => { // validation ok
+                return true
             },
             error => { // validation not ok
 
@@ -346,29 +393,23 @@ class EditUser extends React.Component<Props, State> {
                     error.message ||
                     error.toString();
 
-                console.log(resMessage);
-                AuthService.logout();
-                window.location.href="/";  // redirect page
+                //console.log(resMessage);
+                return false
             }
-        );
+        ).then( (response) => { return response; } );
 
-        console.log( "returning " + login_state );
-        return login_state;
+        return result;
     }
 
 
     login(email: string, password: string) {
         // log in user with email and password
 
-        const { login_state } = this.state;
-        this.setState({ login_state: false});
-
         AuthService.login(email, password)
         .then(
 
             () => { // validation ok
                 console.log("re-login success");
-                this.setState({ login_state: true});
             },
             error => { // validation not ok
 
@@ -379,6 +420,7 @@ class EditUser extends React.Component<Props, State> {
                     error.message ||
                     error.toString();
 
+                console.log("re-login failed :");
                 console.log(resMessage);
                 AuthService.logout();
                 window.location.href="/";  // redirect page
@@ -386,12 +428,12 @@ class EditUser extends React.Component<Props, State> {
         );
     }
 
-    removeRole(role: Role) {
+    removeRole(role: Role | null) {
         // removes a given role from the roles of the user being viewed
 
         const { viewedUser, appRoles } = this.state;
 
-        if (viewedUser != null && appRoles != null) {
+        if (viewedUser != null && appRoles != null && role != null) {
             this.setState({
                 loading_role: true
             });
@@ -409,14 +451,16 @@ class EditUser extends React.Component<Props, State> {
                 newRoles
             );
         }
+
+        this.setState({loading_role: false, modal: false, modalMessage: "", modalAction: "", updateRole: null});
     }
 
-    addRole(role: Role) {
+    addRole(role: Role | null) {
         // adds a given role to the roles of the user being viewed
 
         const { viewedUser } = this.state;
 
-        if (viewedUser != null) {
+        if (viewedUser != null && role != null) {
             this.setState({
                 loading_role: true
             });
@@ -430,6 +474,8 @@ class EditUser extends React.Component<Props, State> {
                 viewedUser.roles.concat( role )
             );
         }
+
+        this.setState({loading_role: false, modal: false, modalMessage: "", modalAction: "", updateRole: null});
     }
 
     isFound(roles: Role[], role: string): boolean {
@@ -450,14 +496,14 @@ class EditUser extends React.Component<Props, State> {
     render() {
 
         const { currentUser, viewedUser, appRoles, loading_bio, loading_password,
-                loading_role, flash, flashMessage, flashType } = this.state;
+                loading_role, flash, flashMessage, flashType,
+                modal, modalMessage, modalAction, updateRole } = this.state;
         const { match } = this.props;  // props injected from HOC wrapper component
 
         const currentID = viewedUser === null ? 0 : viewedUser.id;
         const currentFirstname = viewedUser === null ? '' : viewedUser.firstName;
         const currentLastname = viewedUser === null ? '' : viewedUser.lastName;
         const currentEmail = viewedUser === null ? '' : viewedUser.email;
-        const currentEmail2 = currentUser === null ? '' : currentUser.email;
 
         const initialValuesBio = {
             id: currentID,
@@ -468,7 +514,6 @@ class EditUser extends React.Component<Props, State> {
         };
 
         const initialValuesPassword = {
-            email: currentEmail2,
             password: "",
             newPassword: "",
             confirmPassword: "",
@@ -482,6 +527,32 @@ class EditUser extends React.Component<Props, State> {
                  <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
                      <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
                  </Fade>
+
+                {/* Modal */}
+                <ReactModal
+                   isOpen={modal}
+                   onRequestClose={() => this.setState({modal: false, modalMessage: "", modalAction: "", updateRole: null})}
+                   ariaHideApp={false}
+                   style={{content: {width: '400px', height: '200px', inset: '35%'},
+                           overlay: {backgroundColor: 'rgba(44, 44, 45, 0.35)'}
+                         }}
+                >
+                    <div className="my-4"> {modalMessage} </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger custom-mr-10"
+                      onClick={() => modalAction === "removeRole" ?  this.removeRole( updateRole ? updateRole : null ) : ( modalAction === "addRole" ? this.addRole( updateRole ? updateRole : null ) : "") }>
+                        <span> { modalAction === "removeRole" ?  "Remove role" : ( modalAction === "addRole" ? "Add role" : "unknown") } </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger custom-mr-10"
+                      onClick={() => this.setState({modal: false, modalMessage: "", modalAction: "", updateRole: null})}>
+                        <span>Cancel</span>
+                    </button>
+                </ReactModal>
 
                 {(currentUser && currentUser != null && viewedUser && viewedUser != null) ?
                     <div>
@@ -564,7 +635,7 @@ class EditUser extends React.Component<Props, State> {
                                                   className="alert alert-danger"
                                                 />
                                             </div>
-                                            <div className="form-group pb-1">
+                                            <div className="form-group pb-1 mt-2">
                                                 <Field name="bio_password" type="password" className="form-control" placeholder="My Password"/>
                                                 <ErrorMessage
                                                   name="bio_password"
@@ -603,15 +674,7 @@ class EditUser extends React.Component<Props, State> {
                               onSubmit={this.handlePasswordEdit}  // onSubmit function executes if there are no errors
                             >
                                 <Form>
-                                    <div className="form-group pb-1">
-                                        <Field name="email" type="email" className="form-control" disabled/>
-                                        <ErrorMessage
-                                          name="email"
-                                          component="div"
-                                          className="alert alert-danger"
-                                        />
-                                    </div>
-                                    <div className="form-group pb-1">
+                                    <div className="form-group pb-1 mb-2">
                                         <Field name="password" type="password" className="form-control" placeholder="My Current Password"/>
                                         <ErrorMessage
                                           name="password"
@@ -681,7 +744,11 @@ class EditUser extends React.Component<Props, State> {
                                                   type="button"
                                                   className="btn btn-sm btn-primary custom-mr-10"
                                                   disabled={ this.isFound(viewedUser.roles, role.name) }
-                                                  onClick={() => this.addRole(role)}
+                                                  onClick={() =>  this.setState({modal: true,
+                                                                  modalMessage: "Are you sure you want to add "+role.name+" ?",
+                                                                  modalAction: "addRole",
+                                                                  updateRole: role
+                                                           }) }
                                                 >
                                                     Add Role
                                                 </button>
@@ -690,7 +757,11 @@ class EditUser extends React.Component<Props, State> {
                                                   type="button"
                                                   className="btn btn-sm btn-danger custom-mr-10"
                                                   disabled={ !this.isFound(viewedUser.roles, role.name) }
-                                                  onClick={() => this.removeRole(role)}
+                                                  onClick={() =>  this.setState({modal: true,
+                                                                  modalMessage: "Are you sure you want to remove "+role.name+" ?",
+                                                                  modalAction: "removeRole",
+                                                                  updateRole: role
+                                                           }) }
                                                 >
                                                     Remove Role
                                                 </button>

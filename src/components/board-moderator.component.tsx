@@ -4,7 +4,6 @@ import { Navigate, useParams, Link } from "react-router-dom";
 
 import ErrorBoundary from './error-page.component';
 import InvoiceCards from './invoice-cards.component';
-
 import Invoices from './invoice.component';
 
 import UserService from "../services/UserService";
@@ -69,7 +68,7 @@ class BoardModerator extends React.Component<Props, State> {
 
                     <InvoiceCards/>
 
-                    <Invoices/>
+                    <Invoices userRole="moderator"/>
 
                 </ErrorBoundary>
             </div>

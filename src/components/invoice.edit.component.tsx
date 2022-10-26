@@ -18,21 +18,30 @@ import { withRouter, WithRouterProps } from './withRouter';
 // types and interfaces
 import { Role } from '../types/role.type'
 import { IUser } from '../types/user.type'
-import { InvoiceItem, InvoiceItemUnique } from '../types/invoice.type'
+import { InvoiceData, InvoiceItem, InvoiceItemUnique } from '../types/invoice.type'
 
 
 // types for the component props
-interface Params {};
+interface Params {
+    /** invoice id passed as a url param */
+    invoiceID: string
+};
 
-type Props = WithRouterProps<Params>;
+type Props = WithRouterProps<Params>; // type for the higher order component used
+
+interface InvProps extends Props {
+    /** invoice id passed as a prop */
+    invid: string;  // adding to HOC prop type
+}
 
 type State = {
-    userReady: boolean,
     currentUser: IUser | null,
     loading: boolean,
     flash: boolean,
     flashMessage: string,
     flashType: Color,
+    /** Details for the invoice being viewed */
+    invoice: InvoiceData | null,
     items: InvoiceItemUnique[],
     lastItemID: number,
     subtotal: string,
@@ -47,20 +56,20 @@ type State = {
 };
 
 
-class CreateInvoice extends React.Component<Props, State> {
+class EditInvoice extends React.Component<InvProps, State> {
 
     // constructor() - is invoked before the component is mounted.
-    constructor(props: Props) {
+    constructor(props: InvProps) {
 
         // declare state variables
         super(props);
         this.state = {
-            userReady: false,
             currentUser: null,
             loading: false,
             flash: false,
             flashMessage: "",
             flashType: "info",
+            invoice: null,
             items: [{
                 id: 0,
                 description: "",
@@ -95,14 +104,48 @@ class CreateInvoice extends React.Component<Props, State> {
     //      component is already placed in the DOM (Document Object Model).
     componentDidMount() {
 
-        const { navigate } = this.props;  // params injected from HOC wrapper component
+        const { invid, match, navigate } = this.props;  // params injected from HOC wrapper component
+
+        let invoiceID;
+        if (this.props.invid !== "#") { // id NOT provided in url
+            invoiceID = parseInt(invid); // get id from props
+
+        } else { // id provided in the url
+            invoiceID = parseInt(match.params.invoiceID); // get id from url param
+        }
+
         const currentUser = AuthService.getCurrentUser();
 
         if (currentUser === null) {
             navigate("/home"); // redirect to home page
         } else {
-            this.setState({ currentUser: currentUser, userReady: true });
+            this.setState({ currentUser: currentUser });
         }
+
+
+        // get invoice data
+        InvoiceService.getInvoice(invoiceID).then((response) => {
+            this.setState({
+                invoice: response.data.invoice,
+                invoiceNum: response.data.invoice.id,
+                items: response.data.invoice.items,
+                subtotal: response.data.invoice.subtotal,
+                tax: response.data.invoice.tax,
+                taxRate: response.data.invoice.taxRate,
+                totalDue: response.data.invoice.totalDue
+            });
+            //console.log(response.data.invoice)
+
+        }).catch((error) => {
+            const resMessage =
+                (error.response &&
+                error.response.data &&
+                error.response.data.message) ||
+                error.message ||
+                error.toString();
+
+            console.log(resMessage);
+        });
 
         // get date and format it
         const today = new Date();
@@ -112,11 +155,7 @@ class CreateInvoice extends React.Component<Props, State> {
         const formattedToday = dd + "/" + mm + "/" + yyyy;
 
         this.setState({ invoiceDate: formattedToday });
-        this.setState({ invoiceNum: "#####" });
 
-        // get tax rate
-        // ...
-        this.setState({ taxRate: "0.01" });
     }
 
     validationSchema() {
@@ -470,26 +509,26 @@ class CreateInvoice extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { userReady, currentUser, loading, flash, flashMessage, flashType,
-                items, lastItemID, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
+        const { currentUser, loading, flash, flashMessage, flashType,
+                invoice, items, lastItemID, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
         const initialValues = {
-            companyFrom: "",
-            streetFrom: "",
-            cityFrom: "",
-            stateFrom: "",
-            zipFrom: "",
-            phoneFrom: "",
-            nameTo: "",
-            companyTo: "",
-            streetTo: "",
-            cityTo: "",
-            stateTo: "",
-            zipTo: "",
-            phoneTo: "",
-            emailTo: "",
+            companyFrom: invoice === null ? "" : invoice.companyFrom,
+            streetFrom: invoice === null ? "" : invoice.streetFrom,
+            cityFrom: invoice === null ? "" : invoice.cityFrom,
+            stateFrom: invoice === null ? "" : invoice.stateFrom,
+            zipFrom: invoice === null ? "" : invoice.zipFrom,
+            phoneFrom: invoice === null ? "" : invoice.phoneFrom,
+            nameTo: invoice === null ? "" : invoice.nameTo,
+            companyTo: invoice === null ? "" : invoice.companyTo,
+            streetTo: invoice === null ? "" : invoice.streetTo,
+            cityTo: invoice === null ? "" : invoice.cityTo,
+            stateTo: invoice === null ? "" : invoice.stateTo,
+            zipTo: invoice === null ? "" : invoice.zipTo,
+            phoneTo: invoice === null ? "" : invoice.phoneTo,
+            emailTo: invoice === null ? "" : invoice.emailTo,
             formitems: items,
-            comments: ""
+            comments: invoice === null ? "" : invoice.comments
         };
 
 
@@ -507,7 +546,7 @@ class CreateInvoice extends React.Component<Props, State> {
                          <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
                      </Fade>
 
-                    {(userReady && currentUser != null) ?
+                    {(invoice != null && currentUser != null) ?
                         <div className="card">
                             <header className="jumbotron d-flex row mx-0 gx-1 px-2 align-items-center">
 
@@ -526,6 +565,10 @@ class CreateInvoice extends React.Component<Props, State> {
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+
+                                <div className="col-md-6 col-sm-12">
+                                    <span className="fs-5 badge bg-secondary"> {invoice.status} </span>
                                 </div>
 
                             </header>
@@ -919,7 +962,7 @@ class CreateInvoice extends React.Component<Props, State> {
                                                             >
                                                                 <i className="bi bi-x-circle align-self-center"></i>
                                                                 <span className="mx-1"></span>
-                                                                <span className="align-self-center">Discard</span>
+                                                                <span className="align-self-center">Delete</span>
                                                             </button>
                                                         </div>
 
@@ -927,26 +970,14 @@ class CreateInvoice extends React.Component<Props, State> {
 
                                                             <button
                                                               type="button"
-                                                              id="invoice-draft-btn"
-                                                              onClick={() => { this.setState({ saveAsPending: false  }, () => { this.handleSubmit(values) } ); }}
-                                                              className="btn btn-sm btn-outline-secondary rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
-                                                              disabled={!(isValid && dirty)}
-                                                            >
-                                                                <i className="bi bi-check align-self-center"></i>
-                                                                <span className="mx-1"></span>
-                                                                <span className="align-self-center">Draft</span>
-                                                            </button>
-
-                                                            <button
-                                                              type="button"
                                                               id="invoice-save-btn"
                                                               onClick={() => { this.setState({ saveAsPending: true  }, () => { this.handleSubmit(values) } ); }}
-                                                              className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto"
+                                                              className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
                                                               disabled={!(isValid && dirty)}
                                                             >
                                                                 <i className="bi bi-check-circle align-self-center"></i>
                                                                 <span className="mx-1"></span>
-                                                                <span className="align-self-center">Publish</span>
+                                                                <span className="align-self-center">Save Changes</span>
                                                             </button>
 
                                                         </div>
@@ -969,4 +1000,4 @@ class CreateInvoice extends React.Component<Props, State> {
     }
 }
 
-export default withRouter(CreateInvoice)
+export default withRouter(EditInvoice)

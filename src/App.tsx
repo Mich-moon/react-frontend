@@ -18,6 +18,7 @@ import Settings from "./components/settings.component";
 import ViewUser from "./components/view-user.component";
 import EditUser from "./components/edit-user.component";
 import ViewInvoice from "./components/invoice.view.component";
+import EditInvoice from "./components/invoice.edit.component";
 
 
 import CreateInvoice from './components/new-invoice.component';
@@ -175,6 +176,7 @@ class App extends React.Component<Props, State> {
 
                             <Route path="/newinvoice" element={ <CreateInvoice/> } />
                             <Route path="/invoiceview/:invoiceID" element={ <ViewInvoice invid="#"/> } />
+                            <Route path="/invoiceedit/:invoiceID" element={ <EditInvoice invid="#"/> } />
 
                         </Routes>
                     </div>

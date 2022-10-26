@@ -20,18 +20,19 @@ import { InvoiceData, InvoiceItemUnique } from '../types/invoice.type'
 
 // types for the component props
 interface Params {
-    /* invoice id passed as a url param */
+    /** invoice id passed as a url param */
     invoiceID: string
 };
 
 type Props = WithRouterProps<Params>; // type for the higher order component used
 
 interface InvProps extends Props {
+    /** invoice id passed as a prop */
     invid: string;  // adding to HOC prop type
 }
 
 type State = {
-    /* Details of user currently logged into the app */
+    /** Details of user currently logged into the app */
     currentUser: IUser | null,
 
     /** Details for the invoice being viewed */
@@ -190,13 +191,12 @@ class ViewInvoice extends React.Component<InvProps, State> {
                             <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
 
                                 <div className = "d-inline-flex row d-flex align-items-center col-6 mt-2">
-                                    <span className="col-2 text-start"> Status: </span>
-                                    <span className={`col-3 rounded-pill p-0
-                                        ${invoice.status === "draft" ? "" : "bg-draft-outline"}
-                                        ${invoice.status === "pending" ? "" : "bg-pending-outline"}
-                                        ${invoice.status === "approved" ? "" : "bg-approved-outline"}
-                                        ${invoice.status === "paid" ? "" : "bg-paid-outline"}`
-                                    }>
+                                    <span className={`col-4 rounded-pill py-2
+                                        ${invoice.status == "DRAFT" ? "bg-draft-outline" :
+                                        ( invoice.status === "PENDING" ? "bg-pending-outline" :
+                                        ( invoice.status === "APPROVED" ? "bg-approved-outline" :
+                                        ( invoice.status === "PAID" ? "bg-paid-outline" : "" ) ) )}
+                                    `}>
                                         {invoice.status}
                                     </span>
                                 </div>
@@ -204,21 +204,20 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                 <div className = "d-inline-flex row d-flex justify-content-end align-items-center col-6 mt-2">
 
                                     {/* edit invoice button */}
-                                    <button
-                                      type="button"
-                                      id="invoice-edit-btn"
+                                    <Link
+                                      to={`/invoiceedit/${invoice.id}`}
                                       className="btn btn-sm btn-secondary rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
                                     >
                                         <i className="bi bi-pencil-fill align-self-center"></i>
                                         <span className="mx-1"></span>
                                         <span className="align-self-center">Edit</span>
-                                    </button>
+                                    </Link>
 
                                     {/* delete invoice button */}
                                     <button
                                       type="button"
                                       id="invoice-delete-btn"
-                                      className="btn btn-sm btn-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
+                                      className="btn btn-sm btn-outline-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
                                       onClick={() => this.handleOpenDeleteModal(invoice.id)}
                                     >
                                         <i className="bi bi-x-circle-fill align-self-center"></i>

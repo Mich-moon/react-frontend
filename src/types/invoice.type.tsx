@@ -97,7 +97,7 @@ export type Invoice = {
 
 };
 
-export type IStatus = "draft" | "pending" | "approved" | "paid"; // possible status values for invoices
+export type IStatus = "DRAFT" | "PENDING" | "APPROVED" | "PAID"; // possible status values for invoices
 
 export type InvoiceData = {
     /** unique identification for the invoice */

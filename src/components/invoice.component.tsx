@@ -31,7 +31,12 @@ import { IUser } from '../types/user.type'
 // types for the component props
 interface Params {};
 
-type Props = WithRouterProps<Params>;
+type Props = WithRouterProps<Params>; // type for the higher order component used
+
+interface InvProps extends Props {
+    /** the role of the current user */
+    userRole: "user" | "moderator";  // adding to HOC prop type
+}
 
 type State = {
     /* Details of user currently logged into the app */
@@ -56,13 +61,13 @@ type State = {
     deleteID: number | null
 };
 
-class Invoices extends React.Component<Props, State> {
+class Invoices extends React.Component<InvProps, State> {
 
     /** to store component ref */
     private invrefs: React.RefObject<DownloadInvoice>[];
 
     // constructor() - is invoked before the component is mounted.
-    constructor(props: Props) {
+    constructor(props: InvProps) {
 
         // declare state variables
         super(props);
@@ -109,11 +114,20 @@ class Invoices extends React.Component<Props, State> {
         }
     }
 */
-    getInvoices() {
+    async getInvoices() {
+        // get invoices from the database depending on user role
 
         const { invoices } = this.state;
+        const { userRole } = this.props;
 
-        InvoiceService.getInvoices().then((response) => {
+        async function getInv() {
+            if (userRole === "moderator") {
+                return InvoiceService.getInvoices();
+            }
+            return InvoiceService.getMyInvoices();
+        }
+
+        getInv().then((response) => {
             this.setState({ invoices: response.data.invoices });
 
             for (let i = 0; i < response.data.invoices.length; i++) {
@@ -135,6 +149,7 @@ class Invoices extends React.Component<Props, State> {
     }
 
     deleteInvoice() {
+        // delete specific invoice from database
 
         if (this.state.deleteID != null) {
 
@@ -298,10 +313,10 @@ class Invoices extends React.Component<Props, State> {
                                             </div>
                                             <div className="d-flex align-items-center flex-column col-3">
                                                 <span className={`text-mini rounded-pill bg-light px-2 py-1
-                                                    ${invoice.status === "draft" ? "" : "bg-draft-outline"}
-                                                    ${invoice.status === "pending" ? "" : "bg-pending-outline"}
-                                                    ${invoice.status === "approved" ? "" : "bg-approved-outline"}
-                                                    ${invoice.status === "paid" ? "" : "bg-paid-outline"}
+                                                    ${invoice.status == "DRAFT" ? "bg-draft-outline" :
+                                                    ( invoice.status === "PENDING" ? "bg-pending-outline" :
+                                                    ( invoice.status === "APPROVED" ? "bg-approved-outline" :
+                                                    ( invoice.status === "PAID" ? "bg-paid-outline" : "" ) ) )}
                                                 `}>
                                                     {invoice.status}
                                                 </span>
@@ -311,7 +326,7 @@ class Invoices extends React.Component<Props, State> {
                                         <div className="d-inline-flex d-flex justify-content-end align-items-center mx-0 col-md-3 col-sm-12">
 
                                             {/* edit button */}
-                                            <Link to={`/userview/${0}`} className="btn btn-sm bg-light rounded-pill custom-mr-10 text-secondary">
+                                            <Link to={`/invoiceedit/${invoice.id}`} className="btn btn-sm bg-light rounded-pill custom-mr-10 text-secondary">
                                                 <i className="bi bi-pencil-fill align-self-center"></i>
                                             </Link>
 

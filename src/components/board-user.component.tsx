@@ -2,6 +2,7 @@ import React from 'react';
 
 import ErrorBoundary from './error-page.component';
 import InvoiceCards from './invoice-cards.component';
+import Invoices from './invoice.component';
 
 import UserService from "../services/UserService";
 
@@ -60,6 +61,8 @@ class BoardUser extends React.Component<Props, State> {
                     <hr/>
 
                     <InvoiceCards/>
+
+                    <Invoices userRole="user"/>
 
                 </ErrorBoundary>
 

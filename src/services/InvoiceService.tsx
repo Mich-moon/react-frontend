@@ -42,6 +42,10 @@ class InvoiceService {
         return axiosInstance.get(INVOICES_REST_API_URL);
     }
 
+    getMyInvoices() {
+        return axiosInstance.get(INVOICES_REST_API_URL + "my-invoices");
+    }
+
     getInvoice(id: number) {
         return axiosInstance.get(INVOICES_REST_API_URL + id);
     }

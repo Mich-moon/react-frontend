@@ -27,8 +27,9 @@ import BoardUser from "./components/board-user.component";
 import BoardModerator from "./components/board-moderator.component";
 import BoardAdmin from "./components/board-admin.component";
 
-import Navbar from "./components/navbar.component";
-import SidebarContent from "./components/sidebar-content.component"
+import NavContent from "./components/navbar-content.component";
+import SidebarContent from "./components/sidebar-content.component";
+import Footer from "./components/footer.component";
 
 
 // types for the component props
@@ -132,25 +133,31 @@ class App extends React.Component<Props, State> {
                   onSetOpen={this.onSetSidebarOpen}
                 >
 
-                    {/* TOP NAVIGATION BAR */}
-                    <Navbar/>
+                    {/* TOP NAVBAR */}
+                    <nav className="navbar navbar-expand navbar-dark bg-dark px-4 relative py-0">
 
-                    {/* toggle sidebar button */}
-                    <button
-                      type="button"
-                      id="sidebarCollapse"
-                      className="btn btn-primary sidebar-toggle"
-                      onClick={() => this.toggle()}
-                    >
-                        { sidebarOpen ?
-                            <i className="bi bi-arrow-bar-left align-self-center"></i>
-                        :
-                            <i className="bi bi-arrow-bar-right align-self-center"></i>
-                        }
-                        <span className="mx-1"></span>
-                        <span>Toggle Sidebar</span>
-                    </button>
+                        {/* toggle sidebar button */}
+                        <button
+                          type="button"
+                          id="sidebarCollapse"
+                          className="btn btn-dark bg-dark sidebar-toggle"
+                          onClick={() => this.toggle()}
+                        >
+                            <i className="bi bi-list"></i>
+                            <span className="mx-1"></span>
 
+                            { sidebarOpen ?
+                                <i className="bi bi-arrow-bar-left align-self-center"></i>
+                            :
+                                <i className="bi bi-arrow-bar-right align-self-center"></i>
+                            }
+
+                        </button>
+
+                        {/* TOP NAVIGATION BAR */}
+                        <NavContent/>
+
+                    </nav>
 
                     {/* Defining all routes for app */}
                     <div className="container mt-3">
@@ -182,20 +189,7 @@ class App extends React.Component<Props, State> {
                     </div>
 
                     {/* footer */}
-                    <div className="bg-dark d-flex position-absolute w-100">
-                        <div className="col-3 d-flex flex-column">
-                            <span>We make invoices</span>
-                        </div>
-                        <div className="col-3 d-flex flex-column">
-                            <span>Community</span>
-                        </div>
-                        <div className="col-3 d-flex flex-column">
-                            <span>Links</span>
-                        </div>
-                        <div className="col-3 d-flex flex-column">
-                            <span>Guides</span>
-                        </div>
-                    </div>
+                    <Footer/>
 
                     {/* script tags */}
                     {/*<Helmet> */}

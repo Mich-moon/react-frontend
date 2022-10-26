@@ -30,7 +30,7 @@ type State = {
 };
 
 
-class Navbar extends React.Component<Props, State> {
+class NavContent extends React.Component<Props, State> {
 
     // constructor() - is invoked before the component is mounted.
     constructor(props: Props) {
@@ -80,51 +80,48 @@ class Navbar extends React.Component<Props, State> {
 
         return (
 
-            <div>
+            <div className="d-flex d-inline w-100 justify-content-between">
 
-                <nav className="navbar navbar-expand navbar-dark bg-dark  px-4 relative">
+                <Link to={"/"} className="navbar-brand">
+                    SpringReact
+                </Link>
 
-                    <Link to={"/"} className="navbar-brand">
-                        SpringReact
-                    </Link>
+                {currentUser ? (
 
-                    {currentUser ? (
+                    <div className="navbar-nav ml-auto">
+                        <li className="nav-item">
+                            <Link to={"/profile"} className="nav-link">
+                                {currentUser.email}
+                            </Link>
+                        </li>
 
-                        <div className="navbar-nav ml-auto">
-                            <li className="nav-item">
-                                <Link to={"/profile"} className="nav-link">
-                                    {currentUser.email}
-                                </Link>
-                            </li>
+                        <li className="nav-item">
+                            <a href="/" className="nav-link" onClick={this.logOut}>
+                                LogOut
+                            </a>
+                        </li>
+                    </div>
 
-                            <li className="nav-item">
-                                <a href="/" className="nav-link" onClick={this.logOut}>
-                                    LogOut
-                                </a>
-                            </li>
-                        </div>
+                ) : (
 
-                    ) : (
+                    <div className="navbar-nav ml-auto">
+                        <li className="nav-item">
+                            <Link to={"/login"} className="nav-link">
+                                Login
+                            </Link>
 
-                        <div className="navbar-nav ml-auto">
-                            <li className="nav-item">
-                                <Link to={"/login"} className="nav-link">
-                                    Login
-                                </Link>
-
-                            </li>
-                            <li className="nav-item">
-                                <Link to={"/register"} className="nav-link">
-                                    Sign Up
-                                </Link>
-                            </li>
-                        </div>
-                    )}
-                </nav>
+                        </li>
+                        <li className="nav-item">
+                            <Link to={"/register"} className="nav-link">
+                                Sign Up
+                            </Link>
+                        </li>
+                    </div>
+                )}
             </div>
         );
 
     }
 }
 
-export default Navbar;
+export default NavContent;

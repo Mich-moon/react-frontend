@@ -134,13 +134,13 @@ class App extends React.Component<Props, State> {
                 >
 
                     {/* TOP NAVBAR */}
-                    <nav className="navbar navbar-expand navbar-dark bg-dark px-4 relative py-0">
+                    <nav className="navbar navbar-expand navbar-dark bg-dark px-4 relative py-2">
 
                         {/* toggle sidebar button */}
                         <button
                           type="button"
                           id="sidebarCollapse"
-                          className="btn btn-dark bg-dark sidebar-toggle"
+                          className="btn btn-dark bg-dark sidebar-toggle my-0 mr-2"
                           onClick={() => this.toggle()}
                         >
                             <i className="bi bi-list"></i>

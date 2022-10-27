@@ -203,3 +203,38 @@ label {
 .text-mini {
     font-size: calc(1px + 2vmin);
 }
+
+/* timeline */
+.time-point {
+    width: 2rem;
+    height:2rem;
+}
+.h-1 {
+    height: 5px;
+}
+
+.progress-0 {
+    width: 0%;
+}
+.progress-30 {
+    width: 30%;
+}
+.progress-60 {
+    width: 60%;
+}
+.progress-100 {
+    width: 100%;
+}
+
+.l-0 {
+    left: 0%
+}
+.l-30 {
+    left: 30%;
+}
+.l-60 {
+    left: 60%;
+}
+.l-100 {
+    left: 100%;
+}

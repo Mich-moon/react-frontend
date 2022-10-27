@@ -34,25 +34,25 @@ class Footer extends React.Component<Props, State> {
 
             <div className="bg-dark d-flex justify-content-around py-4 w-100">
                 <div className="col-3 d-flex flex-column">
-                    <span className="text-muted fw-bold mb-2">We make invoices</span>
+                    <span className="text-muted fw-bold fst-italic mb-2">We make invoices</span>
                     <span className="text-muted">Currently V1.00</span>
                 </div>
                 <div className="col-3 d-flex flex-column">
                     <span className="text-muted fw-bold">Community</span>
-                    <Link to={`#`} className="text-muted link-no-style">
+                    <a href="https://github.com/Mich-moon/spring-react/issues" className="text-muted link-no-style">
                         <span className="ml-3"> Issues </span>
                         <i className="bi bi-box-arrow-up-right"></i>
-                    </Link>
+                    </a>
                 </div>
                 <div className="col-3 d-flex flex-column">
                     <span className="text-muted fw-bold">Links</span>
                     <Link to={`/`} className="text-muted link-no-style">
                         <span className="ml-3"> Home </span>
                     </Link>
-                    <Link to={`#`} className="text-muted link-no-style">
+                    <a href="#" className="text-muted link-no-style">
                         <span className="ml-3"> Docs </span>
                         <i className="bi bi-box-arrow-up-right"></i>
-                    </Link>
+                    </a>
                 </div>
 
             </div>

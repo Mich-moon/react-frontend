@@ -190,18 +190,72 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
                             <div className = "row mx-0 px-0 gx-1 col-12 pt-2 d-flex justify-content-between">
 
-                                <div className = "d-inline-flex row d-flex align-items-center col-6 mt-2">
-                                    <span className={`col-4 rounded-pill py-2
-                                        ${invoice.status == "DRAFT" ? "bg-draft-outline" :
-                                        ( invoice.status === "PENDING" ? "bg-pending-outline" :
-                                        ( invoice.status === "APPROVED" ? "bg-approved-outline" :
-                                        ( invoice.status === "PAID" ? "bg-paid-outline" : "" ) ) )}
-                                    `}>
-                                        {invoice.status}
-                                    </span>
+                                {/* status timeline */}
+                                <div className = "d-inline-flex row d-flex align-items-center col-md-6 col-sm-12 mt-2">
+                                    <div className="position-relative m-4">
+                                        <div className="progress h-1">
+                                            <div
+                                                className={`progress-bar bg-success
+                                                    ${invoice.status === "DRAFT" ? "progress-0" :
+                                                    ( invoice.status === "PENDING" ? "progress-30" :
+                                                    ( invoice.status === "APPROVED" ? "progress-60" :
+                                                    ( invoice.status === "PAID" ? "progress-100" : "" ) ) )}
+                                                `}
+                                                role="progressbar" aria-valuenow={30} aria-valuemin={0} aria-valuemax={100}>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            className={`d-flex justify-content-center position-absolute top-0 l-0 translate-middle btn btn-sm rounded-pill time-point
+                                                ${invoice.status === "DRAFT" || invoice.status === "PENDING" || invoice.status === "APPROVED" || invoice.status === "PAID" ? "btn-success p-3" : "btn-light"}
+                                                ${invoice.status === "DRAFT" ? "p-4" : ""}
+                                            `}
+                                        >
+                                            <i className="event-date bi bi-circle align-self-center"></i>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={`d-flex justify-content-center position-absolute top-0 l-30 translate-middle btn btn-sm rounded-pill time-point
+                                                ${invoice.status === "PENDING" || invoice.status === "APPROVED" || invoice.status === "PAID" ? "btn-success" : "btn-light"}
+                                                ${invoice.status === "PENDING" ? "p-4" : ""}
+                                            `}
+                                        >
+                                            <i className="event-date bi bi-record-circle align-self-center"></i>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={`d-flex justify-content-center position-absolute top-0 l-60 translate-middle btn btn-sm rounded-pill time-point
+                                                ${invoice.status === "APPROVED" || invoice.status === "PAID" ? "btn-success" : "btn-light"}
+                                                ${invoice.status === "APPROVED" ? "p-4" : ""}
+                                            `}
+                                        >
+                                            <i className="event-date bi bi-check-circle align-self-center"></i>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={`d-flex justify-content-center position-absolute top-0 l-100 translate-middle btn btn-sm rounded-pill time-point
+                                            ${invoice.status === "PAID" ? "btn-success p-4" : "btn-light"}
+                                            `}
+                                        >
+                                            <i className="event-date bi bi-check-circle-fill align-self-center"></i>
+                                        </button>
+
+                                        <div className="d-flex mt-4 pt-2">
+                                            <span className="position-absolute l-0 translate-middle text-mini">DRAFT</span>
+                                            <span className="position-absolute l-30 translate-middle text-mini">PENDING</span>
+                                            <span className="position-absolute l-60 translate-middle text-mini">APPROVED</span>
+                                            <span className="position-absolute l-100 translate-middle text-mini">PAID</span>
+                                        </div>
+                                    </div>
+
                                 </div>
 
-                                <div className = "d-inline-flex row d-flex justify-content-end align-items-center col-6 mt-2">
+                                {/* buttons */}
+                                <div className = "d-inline-flex row d-flex justify-content-end align-items-center col-md-5 col-sm-12 mt-2">
 
                                     {/* edit invoice button */}
                                     <Link

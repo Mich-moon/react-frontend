@@ -63,7 +63,6 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.deleteInvoice = this.deleteInvoice.bind(this);
-        this.handleOpenDeleteModal = this.handleOpenDeleteModal.bind(this);
     }
 
     //  componentDidMount() - lifecycle method to execute code when the
@@ -107,13 +106,12 @@ class ViewInvoice extends React.Component<InvProps, State> {
     }
 
     deleteInvoice() {
+        // delete invoice from database
 
         const { navigate } = this.props;  // params injected from HOC wrapper component
         const { invoice } = this.state;
 
         if (invoice != null) {
-
-            //console.log("delete"+this.state.invoice.id);
 
             InvoiceService.deleteInvoice(invoice.id).then(
 
@@ -136,13 +134,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
                     console.log(resMessage);
                 }
             );
-
         }
-    }
-
-    handleOpenDeleteModal(id: number) {
-        // open modal
-        this.setState({modal: true});
     }
 
     //  render() - lifecycle method that outputs HTML to the DOM.
@@ -154,7 +146,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
             <div {...this.props} className="container mb-4">
 
                 {(currentUser != null && invoice && invoice != null) ?
-                    <div>
+                    <div className="mt-4">
 
                         {/* Modal */}
                         <ReactModal
@@ -260,7 +252,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                     {/* edit invoice button */}
                                     <Link
                                       to={`/invoiceedit/${invoice.id}`}
-                                      className="btn btn-sm btn-secondary rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
+                                      className="btn btn-sm btn-outline-dark rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
                                     >
                                         <i className="bi bi-pencil-fill align-self-center"></i>
                                         <span className="mx-1"></span>
@@ -272,7 +264,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
                                       type="button"
                                       id="invoice-delete-btn"
                                       className="btn btn-sm btn-outline-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
-                                      onClick={() => this.handleOpenDeleteModal(invoice.id)}
+                                      onClick={() => this.setState({modal: true}) }
                                     >
                                         <i className="bi bi-x-circle-fill align-self-center"></i>
                                         <span className="mx-1"></span>

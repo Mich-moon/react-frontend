@@ -105,18 +105,9 @@ class EditUser extends React.Component<Props, State> {
     //      component is already placed in the DOM (Document Object Model).
     componentDidMount() {
 
-        const { match, navigate } = this.props;  // params injected from HOC wrapper component
+        const { navigate } = this.props;  // params injected from HOC wrapper component
 
-        // store details for user whose details are to be edited
-        const userID = parseInt(match.params.userID);
-        UserService.getUser(userID).then((response) => {
-
-            this.setState({ viewedUser: response.data.user })
-            //console.log(response.data.user);
-
-        }).catch((error) => {
-            navigate("/home"); // redirect to home page
-        });
+        this.getUser();
 
         // store details for the user accessing the page
         const currentUser = AuthService.getCurrentUser();

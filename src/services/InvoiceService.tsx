@@ -54,7 +54,7 @@ class InvoiceService {
         return axiosInstance.delete(INVOICES_REST_API_URL + id);
     }
 
-    updateInvoice(invoice: Invoice, id: number) {
+    updateInvoice(id: number, invoice: Invoice) {
         return axiosInstance.put(INVOICES_REST_API_URL + id, invoice);
     }
 

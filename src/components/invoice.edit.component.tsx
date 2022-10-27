@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import Alert, { Color } from '@material-ui/lab/Alert';  // for flash message
 import Fade from '@material-ui/core/Fade';   // for flash message fade
 import LoadingOverlay from 'react-loading-overlay-ts';
+import ReactModal from 'react-modal';  // for modal
 
 import AuthService from "../services/AuthService";
 import InvoiceService from "../services/InvoiceService";
@@ -18,7 +19,7 @@ import { withRouter, WithRouterProps } from './withRouter';
 // types and interfaces
 import { Role } from '../types/role.type'
 import { IUser } from '../types/user.type'
-import { InvoiceData, InvoiceItem, InvoiceItemUnique } from '../types/invoice.type'
+import { InvoiceData, InvoiceItem, InvoiceItemUnique, IStatus } from '../types/invoice.type'
 
 
 // types for the component props
@@ -36,12 +37,30 @@ interface InvProps extends Props {
 
 type State = {
     currentUser: IUser | null,
+
+    /** User roles available for the app */
+    appRoles: Role[] | null,
+
     loading: boolean,
     flash: boolean,
     flashMessage: string,
     flashType: Color,
+
+    /** Whether modal should be displayed */
+    modal: boolean,
+
+    /** Message to be displayed by the modal */
+    modalMessage: string,
+
+    /** Indicates what function should be called on modal confirmation */
+    modalAction: string,
+
+    /** Object of type Role to be used for updating a user's roles */
+    statusUpdate: IStatus | null
+
     /** Details for the invoice being viewed */
     invoice: InvoiceData | null,
+
     items: InvoiceItemUnique[],
     lastItemID: number,
     subtotal: string,
@@ -49,10 +68,7 @@ type State = {
     taxRate: string,
     totalDue: string,
     invoiceNum: string,
-    invoiceDate: string,
-
-    /* Indicates whether invoice data should be saved as pending (not a draft) */
-    saveAsPending: boolean
+    invoiceDate: string
 };
 
 
@@ -65,10 +81,15 @@ class EditInvoice extends React.Component<InvProps, State> {
         super(props);
         this.state = {
             currentUser: null,
+            appRoles: null,
             loading: false,
             flash: false,
             flashMessage: "",
             flashType: "info",
+            modal: false,
+            modalMessage: "",
+            modalAction: "",
+            statusUpdate: null,
             invoice: null,
             items: [{
                 id: 0,
@@ -83,11 +104,11 @@ class EditInvoice extends React.Component<InvProps, State> {
             taxRate: "0.00",
             totalDue: "0.00",
             invoiceNum: "0000",
-            invoiceDate: "00-00-0000",
-            saveAsPending: false
+            invoiceDate: "00-00-0000"
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
+        this.getInvoiceDetails = this.getInvoiceDetails.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.addItem = this.addItem.bind(this);
         this.removeItem = this.removeItem.bind(this);
@@ -97,14 +118,47 @@ class EditInvoice extends React.Component<InvProps, State> {
         this.calculateSubtotal = this.calculateSubtotal.bind(this);
         this.handleItemChange = this.handleItemChange.bind(this);
         this.calculateAmountDue = this.calculateAmountDue.bind(this);
-        this.invoiceStatusToPending = this.invoiceStatusToPending.bind(this);
+        this.changeInvoiceStatus = this.changeInvoiceStatus.bind(this);
+        this.deleteInvoice = this.deleteInvoice.bind(this);
     }
 
     //  componentDidMount() - lifecycle method to execute code when the
     //      component is already placed in the DOM (Document Object Model).
     componentDidMount() {
 
-        const { invid, match, navigate } = this.props;  // params injected from HOC wrapper component
+        const { navigate } = this.props;  // params injected from HOC wrapper component
+
+        this.getInvoiceDetails();
+
+        // store details for the user accessing the page
+        const currentUser = AuthService.getCurrentUser();
+        if (currentUser === null) {
+            navigate("/home"); // redirect to home page
+        } else {
+            this.setState({ currentUser: currentUser });
+        }
+
+        // get the user roles available on the app
+        AuthService.getRoles().then((response) => {
+            this.setState({ appRoles: response.data.roles })
+            //console.log(response.data.roles);
+        });
+
+        // get date and format it
+        const today = new Date();
+        const yyyy = String( today.getFullYear() );
+        const mm = (today.getMonth() + 1) > 9 ? String( today.getMonth() + 1 ) : "0" + String( (today.getMonth() + 1 ) ); // Months start at 0!
+        const dd = today.getDate() > 10 ? String( today.getDate() ) : "0" + String( today.getDate() );
+        const formattedToday = dd + "/" + mm + "/" + yyyy;
+
+        this.setState({ invoiceDate: formattedToday });
+
+    }
+
+    getInvoiceDetails() {
+        // get invoice details from database
+
+        const { invid, match } = this.props;  // params injected from HOC wrapper component
 
         let invoiceID;
         if (this.props.invid !== "#") { // id NOT provided in url
@@ -113,15 +167,6 @@ class EditInvoice extends React.Component<InvProps, State> {
         } else { // id provided in the url
             invoiceID = parseInt(match.params.invoiceID); // get id from url param
         }
-
-        const currentUser = AuthService.getCurrentUser();
-
-        if (currentUser === null) {
-            navigate("/home"); // redirect to home page
-        } else {
-            this.setState({ currentUser: currentUser });
-        }
-
 
         // get invoice data
         InvoiceService.getInvoice(invoiceID).then((response) => {
@@ -146,16 +191,6 @@ class EditInvoice extends React.Component<InvProps, State> {
 
             console.log(resMessage);
         });
-
-        // get date and format it
-        const today = new Date();
-        const yyyy = String( today.getFullYear() );
-        const mm = (today.getMonth() + 1) > 9 ? String( today.getMonth() + 1 ) : "0" + String( (today.getMonth() + 1 ) ); // Months start at 0!
-        const dd = today.getDate() > 10 ? String( today.getDate() ) : "0" + String( today.getDate() );
-        const formattedToday = dd + "/" + mm + "/" + yyyy;
-
-        this.setState({ invoiceDate: formattedToday });
-
     }
 
     validationSchema() {
@@ -232,39 +267,29 @@ class EditInvoice extends React.Component<InvProps, State> {
                 nameTo, companyTo, streetTo, cityTo, stateTo, zipTo, phoneTo, emailTo,
                 comments } = formValue; // get data from form
 
-        const { items, currentUser, saveAsPending,
+        const { currentUser, items, invoice,
                subtotal, tax, taxRate, totalDue } = this.state;
 
         this.setState({ loading: true });
 
-        if (currentUser != null) {
+        if (currentUser != null && invoice != null) {
             let createdBy = currentUser.id;
 
-            InvoiceService.createInvoice({companyFrom, streetFrom, cityFrom, stateFrom, zipFrom, phoneFrom,
+            InvoiceService.updateInvoice(invoice.id, {companyFrom, streetFrom, cityFrom, stateFrom, zipFrom, phoneFrom,
                                          nameTo, companyTo, streetTo, cityTo, stateTo, zipTo,
                                          phoneTo, emailTo, items, comments, createdBy,
                                          subtotal, taxRate, tax, totalDue})
             .then(
-                response => { // creation successful
+                response => { // update successful
 
-                    if (saveAsPending) {
-
-                        this.invoiceStatusToPending(response.data.invoice.id);
-
-                    } else {
-
-                        this.setState({
-                            flash: true,
-                            flashMessage: "Invoice saved successfully  as DRAFT!",
-                            flashType: "success",
-                            loading: false,
-                            saveAsPending: false,
-                            invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
-                        });
-                    }
-
+                    this.setState({
+                        flash: true,
+                        flashMessage: "Invoice updated successfully!",
+                        flashType: "success",
+                        loading: false
+                    }, () => { this.getInvoiceDetails(); });
                 },
-                error => { // creation not successful
+                error => { // update not successful
 
                     const resMessage =
                         (error.response &&
@@ -282,7 +307,6 @@ class EditInvoice extends React.Component<InvProps, State> {
                     console.log(resMessage);
                 }
             );
-            //console.log("created by id: "+ createdBy);
 
             // set timer on flash message
             setTimeout(() => {
@@ -291,43 +315,78 @@ class EditInvoice extends React.Component<InvProps, State> {
         }
     }
 
-    invoiceStatusToPending(id: number){
-        // change the invoice's status to invoiceStatusToPending
+    changeInvoiceStatus(){
+        // change the invoice's status
 
-        InvoiceService.updateInvoiceStatus(id, "PENDING")
-        .then(
-            response => { // status update successful
+        const { invoice, statusUpdate } = this.state;
 
-                this.setState({
-                    flash: true,
-                    flashMessage: "Invoice saved successfully as PENDING!",
-                    flashType: "success",
-                    loading: false,
-                    invoiceNum: (response.data.invoice.id).toString().padStart(4, "0")
-                });
-            },
-            error => { // update not successful
+        if (invoice != null && statusUpdate != null) {
 
-                const resMessage =
-                    (error.response &&
-                    error.response.data &&
-                    error.response.data.message) ||
-                    error.message ||
-                    error.toString();
+            InvoiceService.updateInvoiceStatus(invoice.id, statusUpdate)
+            .then(
+                response => { // status update successful
 
-                this.setState({
-                    flash: true,
-                    flashMessage: "Error: failed to save DRAFT as PENDING",
-                    flashType: "error",
-                    loading: false,
-                    saveAsPending: false
-                });
+                    this.setState({
+                        flash: true,
+                        flashMessage: "Invoice saved successfully as " + statusUpdate,
+                        flashType: "success",
+                        loading: false
+                    }, () => { this.getInvoiceDetails(); });
+                },
+                error => { // update not successful
 
-                console.log("Failed");
-                console.log(resMessage);
-            }
-        );
+                    const resMessage =
+                        (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                        error.message ||
+                        error.toString();
 
+                    this.setState({
+                        flash: true,
+                        flashMessage: "Error: failed to update status to " + statusUpdate,
+                        flashType: "error",
+                        loading: false
+                    });
+
+                    console.log("Failed");
+                    console.log(resMessage);
+                }
+            );
+        }
+        this.setState({modal: false, modalMessage: "", modalAction: "", statusUpdate: null});
+    }
+
+    deleteInvoice() {
+        // delete invoice from database
+
+        const { navigate } = this.props;  // params injected from HOC wrapper component
+        const { invoice } = this.state;
+
+        if (invoice != null) {
+
+            InvoiceService.deleteInvoice(invoice.id).then(
+
+                (response) => { // success
+
+                    this.setState({
+                        invoice: null,
+                    }, () => { navigate("/user"); });
+
+                },
+                error => { // failure
+
+                    const resMessage =
+                        (error.response &&
+                        error.response.data &&
+                        error.response.data.message) ||
+                        error.message ||
+                        error.toString();
+
+                    console.log(resMessage);
+                }
+            );
+        }
     }
 
     addItem(): InvoiceItemUnique[] {
@@ -509,7 +568,8 @@ class EditInvoice extends React.Component<InvProps, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { currentUser, loading, flash, flashMessage, flashType,
+        const { currentUser, appRoles, loading, flash, flashMessage, flashType,
+                modal, modalMessage, modalAction, statusUpdate,
                 invoice, items, lastItemID, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
         const initialValues = {
@@ -545,6 +605,86 @@ class EditInvoice extends React.Component<InvProps, State> {
                      <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>
                          <Alert className={styles.alert} severity={flashType}> {flashMessage} </Alert>
                      </Fade>
+
+
+                    {/* Modal */}
+                    <ReactModal
+                       isOpen={modal}
+                       onRequestClose={() => this.setState({modal: false, modalMessage: "", modalAction: "", statusUpdate: null})}
+                       ariaHideApp={false}
+                       style={{content: {width: '400px', height: '200px', inset: '35%'},
+                               overlay: {backgroundColor: 'rgba(44, 44, 45, 0.35)'}
+                             }}
+                    >
+                        <div className="my-4"> {modalMessage} </div>
+
+                        {/* status selection */}
+                        {(modalAction === "changeStatus" && currentUser !== null && appRoles !== null) ?
+                        <Formik
+                              initialValues={{ status : null }}
+                              onSubmit={() => {} }
+                        >
+                        {({ values, errors, touched, setFieldValue }) => (
+                            <div className="pb-2">
+                                <hr className="w-50"></hr>
+                                <div className="form-check">
+                                    <input
+                                      checked={values.status === "DRAFT"}
+                                      onChange={() => setFieldValue("status", "DRAFT")}
+                                      className="form-check-input" type="radio" name="radioStatus" id="radioStatus1">
+                                    </input>
+                                    <label className="form-check-label" htmlFor="radioStatus1"> DRAFT </label>
+                                </div>
+                                <div className="form-check">
+                                    <input
+                                      checked={values.status === "PENDING"}
+                                      onChange={() => setFieldValue("status", "PENDING")}
+                                      className="form-check-input" type="radio" name="radioStatus" id="radioStatus2"></input>
+                                    <label className="form-check-label" htmlFor="radioStatus2"> PENDING </label>
+                                </div>
+                                <div className="form-check">
+                                    <input
+                                      checked={values.status === "APPROVED"}
+                                      disabled={ !currentUser.roles.includes(appRoles[0]) }
+                                      onChange={() => setFieldValue("status", "APPROVED")}
+                                      className="form-check-input" type="radio" name="radioStatus" id="radioStatus3"></input>
+                                    <label className="form-check-label" htmlFor="radioStatus3"> APPROVED </label>
+                                </div>
+                                <div className="form-check">
+                                    <input
+                                      checked={values.status === "PAID"}
+                                      disabled={ !currentUser.roles.includes(appRoles[0]) }
+                                      onChange={() => setFieldValue("status", "PAID")}
+                                      className="form-check-input" type="radio" name="radioStatus" id="radioStatus4"></input>
+                                    <label className="form-check-label" htmlFor="radioStatus4"> PAID </label>
+                                </div>
+                                <button
+                                  className="btn btn-sm btn-dark mt-3"
+                                  onClick={() => {this.setState({ statusUpdate: values.status })} }
+                                >
+                                    Confirm selection
+                                </button>
+                                <hr className="w-50"></hr>
+                            </div>
+                        )}
+                        </Formik>
+                        : null}
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger custom-mr-10"
+                          disabled={statusUpdate === null}
+                          onClick={() => modalAction === "changeStatus" ?  this.changeInvoiceStatus() : ( modalAction === "deleteInvoice" ? this.deleteInvoice() : "") }>
+                            <span> { modalAction === "changeStatus" ?  "Update Status" : ( modalAction === "deleteInvoice" ? "Delete" : "unknown") } </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger custom-mr-10"
+                          onClick={() => this.setState({modal: false, modalMessage: "", modalAction: "", statusUpdate: null})}>
+                            <span>Cancel</span>
+                        </button>
+                    </ReactModal>
 
 
                     {/* invoice details and edit */}
@@ -623,12 +763,24 @@ class EditInvoice extends React.Component<InvProps, State> {
                                 {/* buttons */}
                                 <div className = "d-inline-flex row d-flex justify-content-end align-items-center col-md-5 col-sm-12 mt-2">
 
+                                    {/* edit invoice status button */}
+                                    <button
+                                      type="button"
+                                      id="invoice-delete-btn"
+                                      className="btn btn-sm btn-outline-dark rounded-pill px-2 py-2 col-6 my-auto custom-mr-10"
+                                      onClick={() => this.setState({modal: true, modalMessage: "Select a status", modalAction: "changeStatus"}) }
+                                    >
+                                        <i className="bi bi-exclamation-circle align-self-center"></i>
+                                        <span className="mx-1"></span>
+                                        <span className="align-self-center">Change Status</span>
+                                    </button>
+
                                     {/* delete invoice button */}
                                     <button
                                       type="button"
                                       id="invoice-delete-btn"
                                       className="btn btn-sm btn-outline-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
-                                      onClick={() => /*this.handleOpenDeleteModal(invoice.id)*/ console.log("something")}
+                                      onClick={() => this.setState({modal: true, modalMessage: "Are you sure you want to delete this invoice?", modalAction: "deleteInvoice"}) }
                                     >
                                         <i className="bi bi-x-circle-fill align-self-center"></i>
                                         <span className="mx-1"></span>
@@ -1062,9 +1214,8 @@ class EditInvoice extends React.Component<InvProps, State> {
                                                         <div className="row col-md-6 col-sm-12">
 
                                                             <button
-                                                              type="button"
+                                                              type="submit"
                                                               id="invoice-save-btn"
-                                                              onClick={() => { this.setState({ saveAsPending: true  }, () => { this.handleSubmit(values) } ); }}
                                                               className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
                                                               disabled={!(isValid && dirty)}
                                                             >

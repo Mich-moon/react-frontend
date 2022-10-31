@@ -18,7 +18,7 @@ import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
 import { Role } from '../types/role.type'
-import { IUser } from '../types/user.type'
+import { IUser, StoredUser } from '../types/user.type'
 import { InvoiceData, InvoiceItem, InvoiceItemUnique, IStatus } from '../types/invoice.type'
 
 
@@ -36,7 +36,7 @@ interface InvProps extends Props {
 }
 
 type State = {
-    currentUser: IUser | null,
+    currentUser: StoredUser | null,
 
     /** User roles available for the app */
     appRoles: Role[] | null,
@@ -141,7 +141,6 @@ class EditInvoice extends React.Component<InvProps, State> {
         // get the user roles available on the app
         AuthService.getRoles().then((response) => {
             this.setState({ appRoles: response.data.roles })
-            //console.log(response.data.roles);
         });
 
         // get date and format it
@@ -645,7 +644,7 @@ class EditInvoice extends React.Component<InvProps, State> {
                                 <div className="form-check">
                                     <input
                                       checked={values.status === "APPROVED"}
-                                      disabled={ !currentUser.roles.includes(appRoles[0]) }
+                                      disabled={ !currentUser.roles.includes(appRoles[1].name) }
                                       onChange={() => setFieldValue("status", "APPROVED")}
                                       className="form-check-input" type="radio" name="radioStatus" id="radioStatus3"></input>
                                     <label className="form-check-label" htmlFor="radioStatus3"> APPROVED </label>
@@ -653,7 +652,7 @@ class EditInvoice extends React.Component<InvProps, State> {
                                 <div className="form-check">
                                     <input
                                       checked={values.status === "PAID"}
-                                      disabled={ !currentUser.roles.includes(appRoles[0]) }
+                                      disabled={ !currentUser.roles.includes(appRoles[1].name) }
                                       onChange={() => setFieldValue("status", "PAID")}
                                       className="form-check-input" type="radio" name="radioStatus" id="radioStatus4"></input>
                                     <label className="form-check-label" htmlFor="radioStatus4"> PAID </label>

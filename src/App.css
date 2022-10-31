@@ -93,13 +93,13 @@ label {
 .sidebar-active {
     background-color: #06070a;
     margin-right: 20px;
-    border-radius: 16px;
+    border-radius: 20px;
 }
 .side-item:hover {
     background-color: #292b30;
     margin-right: 20px;
     text-shadow: 2px 2px 8px black;
-    border-radius: 16px;
+    border-radius: 20px;
 }
 .navbar-expand {
     flex-wrap: nowrap;

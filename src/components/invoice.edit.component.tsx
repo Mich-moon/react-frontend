@@ -91,13 +91,7 @@ class EditInvoice extends React.Component<InvProps, State> {
             modalAction: "",
             statusUpdate: null,
             invoice: null,
-            items: [{
-                id: 0,
-                description: "",
-                price: "0.00",
-                quantity: "0",
-                amount: "0.00"
-            } as InvoiceItemUnique],
+            items: [],
             lastItemID: 0,
             subtotal: "0.00",
             tax: "0.00",
@@ -394,9 +388,9 @@ class EditInvoice extends React.Component<InvProps, State> {
         const { items, lastItemID } = this.state;
         const newList = items.concat({
             id: lastItemID + 1,
-            description: "",
+            description: "(placeholder)",
             price: "0.00",
-            quantity: "0",
+            quantity: "1",
             amount: "0.00"
         });
 
@@ -586,7 +580,7 @@ class EditInvoice extends React.Component<InvProps, State> {
             zipTo: invoice === null ? "" : invoice.zipTo,
             phoneTo: invoice === null ? "" : invoice.phoneTo,
             emailTo: invoice === null ? "" : invoice.emailTo,
-            formitems: items,
+            formitems: items.slice(),
             comments: invoice === null ? "" : invoice.comments
         };
 
@@ -829,6 +823,22 @@ class EditInvoice extends React.Component<InvProps, State> {
                                         <Form>
 
                                             <div className="row m-0">
+
+                                                {/* message displayed if form has errors */}
+                                                { (errors.nameTo && touched.nameTo) || (errors.companyTo && touched.companyTo) || (errors.streetTo && touched.streetTo) || (errors.cityTo && touched.cityTo) ||
+                                                  (errors.stateTo && touched.stateTo) || (errors.zipTo && touched.zipTo) || (errors.phoneTo && touched.phoneTo) || (errors.emailTo && touched.emailTo) ||
+                                                  (errors.companyFrom && touched.companyFrom) || (errors.streetFrom && touched.streetFrom) || (errors.cityFrom && touched.cityFrom) ||
+                                                  (errors.stateFrom && touched.stateFrom) || (errors.zipFrom && touched.zipFrom) || (errors.phoneFrom && touched.phoneFrom) ||
+                                                  errors.formitems
+                                                ? (
+                                                <div>
+                                                    <div className="alert alert-warning" role="alert">
+                                                        There are fields that require your attention!
+                                                    </div>
+                                                </div>
+                                                ) : null}
+
+                                                {/* FORM */}
                                                 <div className="row m-0 col-12">
 
                                                     {/* Bill to */}
@@ -1038,24 +1048,21 @@ class EditInvoice extends React.Component<InvProps, State> {
                                                                     </div>
                                                                 </div>
 
-                                                                {/* {values.formitems && values.formitems.map( (item: InvoiceItem, index: number) => */}
                                                                 {values.formitems && items && items.map( (item: InvoiceItemUnique, index: number) =>
 
                                                                     <div key={item.id} className="col-12 d-flex hover-shadow mb-1">
                                                                         <div className="input-group-sm col-5">
                                                                             <Field
-                                                                              name={`formitems.${item.id}.description`}
+                                                                              name={`formitems.${index}.description`}
                                                                               value={items[index].description}
-                                                                              //value={items[ items.findIndex(x => x.id === item.id) ].description}
                                                                               type="text"
-                                                                              className={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                              className={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index] && touched.formitems[index].description ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                               data-bs-toggle="tooltip"
                                                                               data-bs-placement="top"
-                                                                              title={errors.formitems && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index].description ? (errors.formitems[index] as InvoiceItem).description : ''}
+                                                                              title={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).description && touched.formitems && touched.formitems[index] && touched.formitems[index].description ? (errors.formitems[index] as InvoiceItem).description : ''}
                                                                               onChange={ (e: React.FormEvent<HTMLInputElement>) => {
                                                                                 handleChange(e);
                                                                                 this.newDesc(e.currentTarget.value, items.findIndex(x => x.id === item.id));
-                                                                                //setFieldValue(`formitems.${index}.description`, e.currentTarget.value);
                                                                                 //console.log(values.formitems[index].description);
                                                                               }}
                                                                               //onBlur={handleBlur}
@@ -1065,12 +1072,11 @@ class EditInvoice extends React.Component<InvProps, State> {
                                                                             <Field
                                                                               name={`formitems.${index}.price`}
                                                                               value={items[index].price}
-                                                                              //value={items[ items.findIndex(x => x.id === item.id) ].price}
                                                                               type="text"
-                                                                              className={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                              className={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index] && touched.formitems[index].price ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                               data-bs-toggle="tooltip"
                                                                               data-bs-placement="top"
-                                                                              title={errors.formitems && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index].price ? (errors.formitems[index] as InvoiceItem).price : ''}
+                                                                              title={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).price && touched.formitems && touched.formitems[index] && touched.formitems[index].price ? (errors.formitems[index] as InvoiceItem).price : ''}
                                                                               onChange={ (e: React.FormEvent<HTMLInputElement>) => {
                                                                                 handleChange(e);
                                                                                 this.newPrice(e.currentTarget.value, items.findIndex(x => x.id === item.id));
@@ -1081,12 +1087,11 @@ class EditInvoice extends React.Component<InvProps, State> {
                                                                             <Field
                                                                               name={`formitems.${index}.quantity`}
                                                                               value={items[index].quantity}
-                                                                              //value={items[ items.findIndex(x => x.id === item.id) ].quantity}
                                                                               type="text"
-                                                                              className={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                              className={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index] && touched.formitems[index].quantity ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                               data-bs-toggle="tooltip"
                                                                               data-bs-placement="top"
-                                                                              title={errors.formitems && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index].quantity ? (errors.formitems[index] as InvoiceItem).quantity : ''}
+                                                                              title={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).quantity && touched.formitems && touched.formitems[index] && touched.formitems[index].quantity ? (errors.formitems[index] as InvoiceItem).quantity : ''}
                                                                               onChange={ (e: React.FormEvent<HTMLInputElement>) => {
                                                                                 handleChange(e);
                                                                                 this.newQty(e.currentTarget.value, items.findIndex(x => x.id === item.id));
@@ -1097,12 +1102,11 @@ class EditInvoice extends React.Component<InvProps, State> {
                                                                             <Field
                                                                               name={`formitems.${index}.amount`}
                                                                               value={items[index].amount}
-                                                                              //value={items[ items.findIndex(x => x.id === item.id) ].amount}
                                                                               type="text"
-                                                                              className={errors.formitems && (errors.formitems[index] as InvoiceItem).amount && touched.formitems && touched.formitems[index].amount ? 'form-control text-start is-invalid' : 'form-control text-start'}
+                                                                              className={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).amount && touched.formitems && touched.formitems[index] && touched.formitems[index].amount ? 'form-control text-start is-invalid' : 'form-control text-start'}
                                                                               data-bs-toggle="tooltip"
                                                                               data-bs-placement="top"
-                                                                              title={errors.formitems && (errors.formitems[index] as InvoiceItem).amount && touched.formitems && touched.formitems[index].amount ? (errors.formitems[index] as InvoiceItem).amount : ''}
+                                                                              title={errors.formitems && errors.formitems[index] && (errors.formitems[index] as InvoiceItem).amount && touched.formitems && touched.formitems[index] && touched.formitems[index].amount ? (errors.formitems[index] as InvoiceItem).amount : ''}
                                                                             />
                                                                         </div>
 
@@ -1216,7 +1220,7 @@ class EditInvoice extends React.Component<InvProps, State> {
                                                               type="submit"
                                                               id="invoice-save-btn"
                                                               className="btn btn-sm btn-success rounded-pill p-2 mt-2 col-md-4 col-sm-4 my-auto mx-4 ms-auto"
-                                                              disabled={!(isValid && dirty)}
+                                                              disabled={!(isValid)}
                                                             >
                                                                 <i className="bi bi-check-circle align-self-center"></i>
                                                                 <span className="mx-1"></span>

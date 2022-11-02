@@ -14,7 +14,7 @@ import { withRouter, WithRouterProps } from './withRouter';
 
 // types and interfaces
 import { Role } from '../types/role.type'
-import { IUser } from '../types/user.type'
+import { StoredUser } from '../types/user.type'
 import { InvoiceData, InvoiceItemUnique } from '../types/invoice.type'
 
 
@@ -33,7 +33,10 @@ interface InvProps extends Props {
 
 type State = {
     /** Details of user currently logged into the app */
-    currentUser: IUser | null,
+    currentUser: StoredUser | null,
+
+    /** User roles available for the app */
+    appRoles: Role[] | null,
 
     /** Details for the invoice being viewed */
     invoice: InvoiceData | null,
@@ -55,6 +58,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
         super(props);
         this.state = {
             currentUser: null,
+            appRoles: null,
             invoice: null,
             modal: false
         };
@@ -87,6 +91,12 @@ class ViewInvoice extends React.Component<InvProps, State> {
         } else {
             this.setState({ currentUser: currentUser });
         }
+
+        // get the user roles available on the app
+        AuthService.getRoles().then((response) => {
+            this.setState({ appRoles: response.data.roles })
+            //console.log(response.data.roles);
+        });
 
         // get invoice data
         InvoiceService.getInvoice(invoiceID).then((response) => {
@@ -140,7 +150,7 @@ class ViewInvoice extends React.Component<InvProps, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { currentUser, invoice, modal } = this.state;
+        const { currentUser, invoice, modal, appRoles } = this.state;
 
         return (
             <div {...this.props} className="container mb-4">
@@ -251,8 +261,10 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
                                     {/* edit invoice button */}
                                     <Link
-                                      to={`/invoiceedit/${invoice.id}`}
-                                      className="btn btn-sm btn-outline-dark rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
+                                        to={`/invoiceedit/${invoice.id}`}
+                                        className={`btn btn-sm btn-outline-dark rounded-pill px-2 py-2 col-4 my-auto custom-mr-10
+                                            ${appRoles != null && !currentUser.roles.includes(appRoles[1].name) && (invoice.status == "APPROVED" || invoice.status == "PAID") ? "disabled" : ""}
+                                        `}
                                     >
                                         <i className="bi bi-pencil-fill align-self-center"></i>
                                         <span className="mx-1"></span>
@@ -261,10 +273,10 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
                                     {/* delete invoice button */}
                                     <button
-                                      type="button"
-                                      id="invoice-delete-btn"
-                                      className="btn btn-sm btn-outline-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
-                                      onClick={() => this.setState({modal: true}) }
+                                        type="button"
+                                        id="invoice-delete-btn"
+                                        className="btn btn-sm btn-outline-danger rounded-pill px-2 py-2 col-4 my-auto custom-mr-10"
+                                        onClick={() => this.setState({modal: true}) }
                                     >
                                         <i className="bi bi-x-circle-fill align-self-center"></i>
                                         <span className="mx-1"></span>

@@ -208,6 +208,7 @@ class Invoices extends React.Component<InvProps, State> {
     render () {
 
         const { invoices, flash, flashMessage, flashType, modal } = this.state;
+        const { userRole } = this.props;
 
         return (
             <div>
@@ -330,7 +331,12 @@ class Invoices extends React.Component<InvProps, State> {
                                         <div className="d-inline-flex d-flex justify-content-end align-items-center mx-0 col-md-3 col-sm-12">
 
                                             {/* edit button */}
-                                            <Link to={`/invoiceedit/${invoice.id}`} className="btn btn-sm bg-light rounded-pill custom-mr-10 text-secondary">
+                                            <Link
+                                                to={`/invoiceedit/${invoice.id}`}
+                                                className={`btn btn-sm bg-light rounded-pill custom-mr-10 text-secondary
+                                                    ${userRole == "user" && (invoice.status == "APPROVED" || invoice.status == "PAID") ? "disabled" : ""}
+                                                `}
+                                            >
                                                 <i className="bi bi-pencil-fill align-self-center"></i>
                                             </Link>
 
@@ -338,6 +344,7 @@ class Invoices extends React.Component<InvProps, State> {
                                             <button
                                                 type="button"
                                                 id={`invoice-pdf-${invoice.id}`}
+                                                disabled={ userRole == "user" && (invoice.status == "APPROVED" || invoice.status == "PAID") }
                                                 className="btn btn-sm bg-light rounded-pill custom-mr-10 text-secondary"
                                                 onClick={() => this.handleOpenDeleteModal(invoice.id)}
                                             >

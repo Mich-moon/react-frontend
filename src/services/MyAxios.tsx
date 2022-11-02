@@ -44,7 +44,7 @@ axiosInstance.interceptors.response.use(
         */
 
         // if there's an error when url is not for login or register pages
-        if ( originalConfig.url !== "http://localhost:8080/api/auth/login" && originalConfig.url !== "http://localhost:8080/api/auth/register" && err.response) {
+        if ( originalConfig.url !== "http://localhost:8080/api/v1/auth/login" && originalConfig.url !== "http://localhost:8080/api/v1/auth/register" && err.response) {
 
             // Access Token has expired and this is first time we meet 401 status
             if (err.response.status === 401 && !originalConfig._retry) {
@@ -53,7 +53,7 @@ axiosInstance.interceptors.response.use(
 
                 try {
                     // request new accessToken, sending the current refreshToken with the request
-                    const rs = await axiosInstance.post("http://localhost:8080/api/auth/refreshtoken", {
+                    const rs = await axiosInstance.post("http://localhost:8080/api/v1/auth/refreshtoken", {
                         refreshToken: TokenService.getLocalRefreshToken(),
                     });
 

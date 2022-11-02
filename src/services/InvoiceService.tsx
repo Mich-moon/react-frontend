@@ -8,12 +8,12 @@ import { Invoice } from '../types/invoice.type'
 import { IStatus } from '../types/invoice.type'
 
 
-const INVOICES_REST_API_URL = 'http://localhost:8080/api/invoices/';
+const INVOICES_REST_API_URL = 'http://localhost:8080/api/v1/';
 
 class InvoiceService {
 
     createInvoice(invoice: Invoice) {
-        return axiosInstance.post(INVOICES_REST_API_URL, {
+        return axiosInstance.post(INVOICES_REST_API_URL + "invoice", {
             companyFrom: invoice.companyFrom,
             streetFrom: invoice.streetFrom,
             cityFrom: invoice.cityFrom,
@@ -39,27 +39,27 @@ class InvoiceService {
     }
 
     getInvoices() {
-        return axiosInstance.get(INVOICES_REST_API_URL);
+        return axiosInstance.get(INVOICES_REST_API_URL + "invoices");
     }
 
-    getMyInvoices() {
-        return axiosInstance.get(INVOICES_REST_API_URL + "my-invoices");
+    getUserInvoices(id: number) {
+        return axiosInstance.get(INVOICES_REST_API_URL + "user/" + id +"/invoices");
     }
 
     getInvoice(id: number) {
-        return axiosInstance.get(INVOICES_REST_API_URL + id);
+        return axiosInstance.get(INVOICES_REST_API_URL + "invoice/" + id);
     }
 
     deleteInvoice(id: number) {
-        return axiosInstance.delete(INVOICES_REST_API_URL + id);
+        return axiosInstance.delete(INVOICES_REST_API_URL + "invoice/" + id);
     }
 
     updateInvoice(id: number, invoice: Invoice) {
-        return axiosInstance.put(INVOICES_REST_API_URL + id, invoice);
+        return axiosInstance.put(INVOICES_REST_API_URL + "invoice/" + id, invoice);
     }
 
     updateInvoiceStatus(id: number, status: IStatus) {
-        return axiosInstance.put(INVOICES_REST_API_URL + id + "/update-status",
+        return axiosInstance.patch(INVOICES_REST_API_URL + "invoice/" + id + "/status",
             null,
             { params: {
                         status

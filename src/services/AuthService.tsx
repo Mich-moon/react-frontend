@@ -8,7 +8,7 @@ import TokenService from './TokenService';
 
 import { RoleEnum } from '../types/role.type'
 
-const API_URL = 'http://localhost:8080/api/auth/';
+const API_URL = 'http://localhost:8080/api/v1/auth/';
 
 class AuthService {
 

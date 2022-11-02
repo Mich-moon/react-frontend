@@ -8,8 +8,8 @@ import axiosInstance from './MyAxios';
 import { Role } from '../types/role.type'
 
 
-const USERS_REST_API_URL = 'http://localhost:8080/api/users/';
-const TEST_REST_API_URL = 'http://localhost:8080/api/test/';
+const USERS_REST_API_URL = 'http://localhost:8080/api/v1/';
+const TEST_REST_API_URL = 'http://localhost:8080/api/v1/test/';
 
 
 class UserService {
@@ -39,19 +39,19 @@ class UserService {
 
     //
     getUsers() {
-        return axiosInstance.get(USERS_REST_API_URL);
+        return axiosInstance.get(USERS_REST_API_URL + 'users');
     }
 
     getUser(id: number) {
-        return axiosInstance.get(USERS_REST_API_URL + id);
+        return axiosInstance.get(USERS_REST_API_URL + 'user/' + id);
     }
 
     deleteUser(id: number) {
-        return axiosInstance.delete(USERS_REST_API_URL + id);
+        return axiosInstance.delete(USERS_REST_API_URL + 'user/' + id);
     }
 
     updateUser(u_id: number, u_firstName: string, u_lastName: string, u_email: string, u_password: string, u_roles: Role[]) {
-        return axiosInstance.put(USERS_REST_API_URL + u_id, {
+        return axiosInstance.put(USERS_REST_API_URL + 'user/' + u_id, {
             firstName: u_firstName,
             lastName: u_lastName,
             email: u_email,
@@ -61,7 +61,7 @@ class UserService {
     }
 
     updateUserPassword(u_id: number, newPassword: string) {
-        return axiosInstance.put(USERS_REST_API_URL + "newpassword/" + u_id, {newPassword} );
+        return axiosInstance.patch(USERS_REST_API_URL + 'user/' + u_id + '/password', {newPassword} );
     }
 }
 

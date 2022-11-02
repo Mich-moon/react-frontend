@@ -172,10 +172,10 @@ label {
 }
 
 .bg-pending {
-    background-color: rgba(132, 252, 255, 1);
+    background-color: rgba(250, 195, 67, 1);
 }
 .bg-pending-outline {
-    border: 2px solid rgba(132, 252, 255, 1);
+    border: 2px solid rgba(250, 195, 67, 1);
 }
 
 .bg-approved {

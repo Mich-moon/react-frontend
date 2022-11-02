@@ -117,35 +117,39 @@ class Invoices extends React.Component<InvProps, State> {
     async getInvoices() {
         // get invoices from the database depending on user role
 
-        const { invoices } = this.state;
+        const { currentUser, invoices } = this.state;
         const { userRole } = this.props;
 
-        async function getInv() {
+        async function getInv(id: number) {
             if (userRole === "moderator") {
                 return InvoiceService.getInvoices();
             }
-            return InvoiceService.getMyInvoices();
+            return InvoiceService.getUserInvoices(id);
+
         }
 
-        getInv().then((response) => {
-            this.setState({ invoices: response.data.invoices });
+        if (currentUser !== null) {
 
-            for (let i = 0; i < response.data.invoices.length; i++) {
-                this.invrefs[i] = React.createRef<DownloadInvoice>(); // create the refs
-            }
+            getInv(currentUser.id).then((response) => {
+                this.setState({ invoices: response.data.invoices });
 
-        }).catch((error) => {
-            const resMessage =
-                (error.response &&
-                error.response.data &&
-                error.response.data.message) ||
-                error.message ||
-                error.toString();
+                for (let i = 0; i < response.data.invoices.length; i++) {
+                    this.invrefs[i] = React.createRef<DownloadInvoice>(); // create the refs
+                }
 
-            console.log(resMessage);
-            this.setState({ invoices: null });
+            }).catch((error) => {
+                const resMessage =
+                    (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                    error.message ||
+                    error.toString();
 
-        });
+                console.log(resMessage);
+                this.setState({ invoices: null });
+
+            });
+        }
     }
 
     deleteInvoice() {

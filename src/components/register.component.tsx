@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Reaptcha from 'reaptcha';
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
@@ -22,7 +23,10 @@ type State = {
     successful: boolean,
 
     /** feedback message to be displayed */
-    message: string
+    message: string,
+
+    /** whether reCAPTCHA verification is successful */
+    verified: boolean,
 };
 
 
@@ -36,14 +40,23 @@ class Register extends React.Component<Props, State> {
         this.state = {
             role: ["ROLE_USER"],
             successful: false,
-            message: ""
+            message: "",
+            verified: false,
         };
 
         // bind methods so that they are accessible from the state inside of the render() method.
         this.handleRegister = this.handleRegister.bind(this);
         this.login = this.login.bind(this);
-
+        this.onVerify = this.onVerify.bind(this);
     }
+
+    onVerify = (recaptchaResponse: string) => {
+        // updates state variable based on result of reCAPTCHA response
+
+        this.setState({
+            verified: true
+        });
+    };
 
     validationSchema() {
 
@@ -158,7 +171,7 @@ class Register extends React.Component<Props, State> {
     //  render() - lifecycle method that outputs HTML to the DOM.
     render() {
 
-        const { successful, message } = this.state;
+        const { successful, message, verified } = this.state;
 
         const initialValues = {
             firstname: "",
@@ -238,7 +251,7 @@ class Register extends React.Component<Props, State> {
                                                 className="text-danger"
                                             />
                                     </div>
-                                    <div className="form-group form-check">
+                                    <div className="form-group form-check mb-2">
                                         <Field
                                             name="acceptTerms"
                                             type="checkbox"
@@ -254,9 +267,18 @@ class Register extends React.Component<Props, State> {
                                         />
                                     </div>
 
+                                        {/* reCAPTCHA */}
+                                    <div style={{transform:"scale(0.88)", transformOrigin:"0 0"}}>
+                                        <Reaptcha
+                                            sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+                                            onVerify={this.onVerify}
+                                            //size="compact"
+                                        />
+                                    </div>
+
                                     <div className="form-group my-4">
 
-                                        <button type="submit" className="btn btn-primary btn-block mb-4 w-100">
+                                        <button type="submit" disabled={!verified} className="btn btn-primary btn-block mb-4 w-100">
                                             Register
                                         </button>
                                         <button type="reset" className="btn btn-light w-100">

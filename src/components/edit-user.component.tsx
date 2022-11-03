@@ -489,7 +489,7 @@ class EditUser extends React.Component<Props, State> {
         const { currentUser, viewedUser, appRoles, loading_bio, loading_password,
                 loading_role, flash, flashMessage, flashType,
                 modal, modalMessage, modalAction, updateRole } = this.state;
-        const { match } = this.props;  // props injected from HOC wrapper component
+        const { match, navigate } = this.props;  // props injected from HOC wrapper component
 
         const currentID = viewedUser === null ? 0 : viewedUser.id;
         const currentFirstname = viewedUser === null ? '' : viewedUser.firstName;
@@ -513,6 +513,18 @@ class EditUser extends React.Component<Props, State> {
 
         return (
             <div className="container">
+
+                {/* back button */}
+                <button
+                    type="button"
+                    className="btn btn-lg rounded-circle position-absolute mx-2 start-0"
+                    onClick={() => navigate(-1)}
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Go back"
+                >
+                    <i className="bi bi-arrow-left-circle-fill align-self-center fs-3"></i>
+                </button>
 
                  {/* flash message */}
                  <Fade in={flash} timeout={{ enter: 300, exit: 1000 }}>

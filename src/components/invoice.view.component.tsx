@@ -152,8 +152,22 @@ class ViewInvoice extends React.Component<InvProps, State> {
 
         const { currentUser, invoice, modal, appRoles } = this.state;
 
+        const { navigate } = this.props;
+
         return (
             <div {...this.props} className="container mb-4">
+
+                {/* back button */}
+                <button
+                    type="button"
+                    className="btn btn-lg rounded-circle"
+                    onClick={() => navigate(-1)}
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Go back"
+                >
+                    <i className="bi bi-arrow-left-circle-fill align-self-center fs-3"></i>
+                </button>
 
                 {(currentUser != null && invoice && invoice != null) ?
                     <div className="mt-4">

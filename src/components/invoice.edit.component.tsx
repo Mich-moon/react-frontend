@@ -565,6 +565,8 @@ class EditInvoice extends React.Component<InvProps, State> {
                 modal, modalMessage, modalAction, statusUpdate,
                 invoice, items, lastItemID, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
+        const { navigate } = this.props;
+
         const initialValues = {
             companyFrom: invoice === null ? "" : invoice.companyFrom,
             streetFrom: invoice === null ? "" : invoice.streetFrom,
@@ -587,6 +589,18 @@ class EditInvoice extends React.Component<InvProps, State> {
 
         return (
             <div className="container mb-4">
+
+                {/* back button */}
+                <button
+                    type="button"
+                    className="btn btn-lg rounded-circle"
+                    onClick={() => navigate(-1)}
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Go back"
+                >
+                    <i className="bi bi-arrow-left-circle-fill align-self-center fs-3"></i>
+                </button>
 
                 <LoadingOverlay
                     active={loading}

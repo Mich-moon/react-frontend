@@ -473,6 +473,8 @@ class CreateInvoice extends React.Component<Props, State> {
         const { userReady, currentUser, loading, flash, flashMessage, flashType,
                 items, lastItemID, subtotal, tax, totalDue, invoiceNum, invoiceDate } = this.state;
 
+        const { navigate } = this.props;
+
         const initialValues = {
             companyFrom: "",
             streetFrom: "",
@@ -495,6 +497,18 @@ class CreateInvoice extends React.Component<Props, State> {
 
         return (
             <div className="container mb-4">
+
+                {/* back button */}
+                <button
+                    type="button"
+                    className="btn btn-lg rounded-circle mx-2 start-0"
+                    onClick={() => navigate(-1)}
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Go back"
+                >
+                    <i className="bi bi-arrow-left-circle-fill align-self-center fs-3"></i>
+                </button>
 
                 <LoadingOverlay
                     active={loading}

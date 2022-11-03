@@ -253,10 +253,27 @@ class Invoices extends React.Component<InvProps, State> {
 
                         <div> <h4> Invoices </h4> </div>
 
-                        <div>
-                            <span className="mx-4"> Filter by status </span>
+                        <div className="d-flex">
 
-                            <Link to={`/newinvoice`} className="btn btn-sm btn-info custom-mr-10 rounded-pill px-4 py-2">
+                            {/* search bar */}
+                            <div className="d-inline d-flex input-group h-50">
+                                <span className="input-group-text" id="searchbar">Search</span>
+                                <input type="text" className="form-control" aria-label="searchbar input" aria-describedby="searchbar input"/>
+                            </div>
+
+                            {/* filter */}
+                            <div className="d-inline d-flex input-group h-50 mx-4">
+                                <label className="input-group-text mt-0" htmlFor="filterSelect">Filter</label>
+                                <select className="form-select" id="filterSelect">
+                                    <option selected>Choose...</option>
+                                    <option value="1">One</option>
+                                    <option value="2">Two</option>
+                                    <option value="3">Three</option>
+                                </select>
+                            </div>
+
+                            {/* new invoice button */}
+                            <Link to={`/newinvoice`} className="btn btn-sm btn-info custom-mr-10 rounded-pill py-2 w-100">
                                 <i className="bi bi-plus-circle-fill text-white align-self-center"></i>
                                 <span className="mx-1"></span>
                                 <span className="align-self-center"> New Invoice </span>

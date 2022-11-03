@@ -58,10 +58,23 @@ class ViewUser extends React.Component<Props, State> {
     render() {
 
         const { userReady, currentUser } = this.state;
-        const { match } = this.props;  // props injected from HOC wrapper component
+        const { match, navigate } = this.props;  // props injected from HOC wrapper component
 
         return (
             <div className="container mb-4">
+
+                {/* back button */}
+                <button
+                    type="button"
+                    className="btn btn-lg rounded-circle d-flex mx-2"
+                    onClick={() => navigate(-1)}
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Go back"
+                >
+                    <i className="bi bi-arrow-left-circle-fill align-self-center fs-3"></i>
+                </button>
+
                 {(userReady && currentUser != null) ?
                     <div>
                         <header className="jumbotron">

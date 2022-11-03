@@ -140,18 +140,10 @@ class App extends React.Component<Props, State> {
                         <button
                           type="button"
                           id="sidebarCollapse"
-                          className="btn btn-dark bg-dark sidebar-toggle my-0 mr-2"
+                          className="text-white btn-dark bg-dark border-0 sidebar-toggle my-0 mr-2"
                           onClick={() => this.toggle()}
                         >
                             <i className="bi bi-list"></i>
-                            <span className="mx-1"></span>
-
-                            { sidebarOpen ?
-                                <i className="bi bi-arrow-bar-left align-self-center"></i>
-                            :
-                                <i className="bi bi-arrow-bar-right align-self-center"></i>
-                            }
-
                         </button>
 
                         {/* TOP NAVIGATION BAR */}

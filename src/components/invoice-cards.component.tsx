@@ -43,20 +43,21 @@ class InvoiceCards extends React.Component<Props, State> {
         const { content } = this.state;
 
         return (
-            <div className="container p-0">
+            <div className="container px-4 py-0 my-0">
                 {(content != null) ?
 
-                    <div className="d-flex justify-content-between">
+                    <div className="d-flex justify-content-around h-100 w-100">
+                        <div className="bg-dark position-absolute card-banner-bg"></div>
 
-                        <div className="card mx-0 col-3">
+                        <div className="card mt-4 col-3 position-relative">
                             <span className="fw-bold mb-1">Pending</span>
                             <div className="border-start border-2 bg-light"><span className="fs-2">###</span></div>
                         </div>
-                        <div className="card mx-0 col-3">
+                        <div className="card mt-4 col-3 position-relative">
                             <span className="fw-bold mb-1">Approved</span>
                             <div className="border-start border-2 bg-light"><span className="fs-2">###</span></div>
                         </div>
-                        <div className="card mx-0 col-3">
+                        <div className="card mt-4 col-3 position-relative">
                             <span className="fw-bold mb-1">Paid</span>
                             <div className="border-start border-2 bg-light"><span className="fs-2">###</span></div>
                         </div>

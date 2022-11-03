@@ -150,6 +150,13 @@ label {
     margin-right: 10px;
 }
 
+.card-banner-bg {
+    z-index: -10;
+    width: 95%;
+    height: 15%;
+    border-radius: 0 0 20px 20px;
+}
+
 .invoice-logo {
     height: 4rem;
 }
